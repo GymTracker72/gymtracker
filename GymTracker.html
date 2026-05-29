@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Gym Tracker">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23007AFF'/><text y='.9em' font-size='70' x='15'>💪</text></svg>">
+<title>Gym Tracker</title>
+<style>
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+  background: #f2f2f7; min-height: 100vh; max-width: 430px;
+  margin: 0 auto; -webkit-font-smoothing: antialiased;
+}
+input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+select { -webkit-appearance: none; }
+button { font-family: inherit; }
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* ── DASHBOARD ── */
+#dash-header { padding: max(env(safe-area-inset-top),44px) 20px 24px; background: #fff; }
+#dash-header .subtitle { font-size: 17px; color: #8e8e93; font-weight: 500; text-transform: uppercase; letter-spacing: .3px; }
+#dash-header h1 { font-size: 36px; font-weight: 700; color: #1c1c1e; margin-top: 6px; letter-spacing: -.5px; }
+
+.section-label { font-size: 16px; color: #8e8e93; font-weight: 600; text-transform: uppercase; letter-spacing: .3px; padding: 22px 20px 12px; }
+
+#workout-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 0 16px; }
+.workout-card {
+  background: #fff; border: none; border-radius: 22px; padding: 22px 18px;
+  cursor: pointer; text-align: left; box-shadow: 0 2px 10px rgba(0,0,0,.09);
+  position: relative; overflow: hidden; transition: transform .12s; width: 100%;
+}
+.workout-card:active { transform: scale(.96); }
+.workout-card .blob { position: absolute; top: -12px; right: -12px; width: 70px; height: 70px; border-radius: 50%; opacity: .15; }
+.workout-card .wicon { font-size: 34px; margin-bottom: 10px; }
+.workout-card .wname { font-size: 24px; font-weight: 700; color: #1c1c1e; }
+.workout-card .wcount { font-size: 16px; color: #8e8e93; margin-top: 4px; }
+.workout-card .wlast { font-size: 15px; font-weight: 500; margin-top: 10px; }
+
+#active-banner {
+  display: none; margin: 16px 16px 0; background: #fff; border-radius: 18px;
+  padding: 16px 18px; box-shadow: 0 2px 10px rgba(0,0,0,.09);
+  align-items: center; gap: 14px; cursor: pointer; border: 2px solid #34C75940;
+}
+#active-banner.show { display: flex; }
+#active-banner .ab-dot { width: 12px; height: 12px; border-radius: 50%; background: #34C759; flex-shrink: 0; animation: blink 1.2s infinite; }
+@keyframes blink { 0%,100%{opacity:1}50%{opacity:.3} }
+#active-banner .ab-info { flex: 1; }
+#active-banner .ab-title { font-size: 19px; font-weight: 700; color: #1c1c1e; }
+#active-banner .ab-sub { font-size: 16px; color: #8e8e93; margin-top: 3px; }
+#active-banner .ab-arrow { font-size: 20px; color: #c7c7cc; }
+
+#history-list { padding: 0 16px 80px; }
+.history-item {
+  background: #fff; border-radius: 16px; padding: 16px 18px;
+  margin-bottom: 10px; display: flex; align-items: center; gap: 14px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.07);
+}
+.history-icon { width: 46px; height: 46px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
+.history-item .hname { font-size: 20px; font-weight: 600; color: #1c1c1e; }
+.history-item .hinfo { font-size: 15px; color: #8e8e93; margin-top: 3px; }
+
+/* ── SESSION ── */
+#session-topbar {
+  background: #fff; border-bottom: 1px solid #e5e5ea;
+  position: sticky; top: 0; z-index: 10;
+  padding: max(env(safe-area-inset-top),44px) 16px 16px;
+}
+#session-topbar .toprow { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+#btn-back { background: none; border: none; cursor: pointer; font-size: 19px; font-weight: 600; padding: 0; }
+#session-timer-display { font-size: 16px; color: #8e8e93; }
+#session-title { font-size: 28px; font-weight: 700; color: #1c1c1e; letter-spacing: -.3px; }
+#btn-end { margin-left: auto; color: #fff; border: none; border-radius: 22px; padding: 11px 24px; font-weight: 700; font-size: 18px; cursor: pointer; }
+
+/* ── COUNTDOWN TIMER ── */
+#countdown-bar {
+  background: #fff; border-bottom: 1px solid #e5e5ea;
+  padding: 12px 16px; display: flex; align-items: center; gap: 12;
+}
+#countdown-display {
+  font-size: 48px; font-weight: 700; letter-spacing: -2px;
+  text-align: center; flex: 1;
+  font-variant-numeric: tabular-nums;
+}
+#countdown-controls { display: flex; gap: 10px; margin-top: 10px; justify-content: center; flex-wrap: wrap; }
+.cd-btn {
+  border: none; border-radius: 14px; padding: 10px 18px;
+  font-size: 16px; font-weight: 600; cursor: pointer; font-family: inherit;
+}
+.cd-preset { background: #f2f2f7; color: #1c1c1e; }
+.cd-start { color: #fff; }
+.cd-stop { background: #ff3b30; color: #fff; }
+.cd-mute { background: #f2f2f7; color: #8e8e93; font-size: 20px; padding: 10px 14px; }
+
+#exercise-list { padding: 14px 16px 80px; }
+
+/* ── EXERCISE CARD ── */
+.ex-card {
+  background: #fff; border-radius: 18px; margin-bottom: 12px;
+  box-shadow: 0 1px 5px rgba(0,0,0,.08); border: 2px solid transparent;
+  overflow: hidden; transition: border-color .2s;
+}
+.ex-header { width: 100%; background: none; border: none; cursor: pointer; padding: 18px; display: flex; align-items: center; gap: 14px; text-align: left; }
+.ex-dot { width: 14px; height: 14px; border-radius: 50%; background: #d1d1d6; flex-shrink: 0; transition: background .2s; }
+.ex-info { flex: 1; }
+.ex-name { font-size: 20px; font-weight: 600; color: #1c1c1e; line-height: 1.3; }
+.ex-progress { font-size: 16px; color: #8e8e93; margin-top: 4px; }
+.ex-chevron { color: #c7c7cc; font-size: 15px; transition: transform .2s; flex-shrink: 0; }
+.ex-chevron.open { transform: rotate(180deg); }
+.ex-body { padding: 0 16px 16px; display: none; }
+.ex-body.open { display: block; }
+
+.sets-header { display: none; }
+
+.set-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 0; border-bottom: 1px solid #f0f0f0; transition: opacity .2s;
+}
+.set-row.done { opacity: .35; }
+.set-num { font-size: 20px; color: #8e8e93; font-weight: 700; width: 28px; text-align: center; flex-shrink: 0; }
+.set-field { display: flex; flex-direction: column; align-items: center; flex: 1; gap: 3px; }
+.set-label { font-size: 13px; color: #8e8e93; font-weight: 600; text-transform: uppercase; letter-spacing: .3px; }
+.set-field select, .set-field input {
+  width: 100%; border: 2px solid #e5e5ea; border-radius: 10px;
+  padding: 12px 6px; font-size: 22px; font-family: inherit;
+  background: #fafafa; color: #1c1c1e; outline: none; text-align: center;
+}
+.set-field input::placeholder { color: #c7c7cc; }
+.btn-done {
+  width: 54px; height: 54px; border-radius: 50%; border: none;
+  background: #e5e5ea; color: #8e8e93; font-size: 24px; cursor: pointer;
+  transition: all .15s; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.btn-done.checked { color: #fff; }
+
+/* Add exercise */
+.add-ex-row { padding: 8px 0 4px; }
+.add-ex-btn { width: 100%; background: none; border: 2px dashed #d1d1d6; border-radius: 12px; padding: 13px; font-size: 17px; color: #8e8e93; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.add-ex-btn:active { background: #f2f2f7; }
+
+/* Add exercise modal */
+#addex-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); display: none; align-items: flex-end; z-index: 200; }
+#addex-overlay.open { display: flex; }
+#addex-box { width: 100%; background: #fff; border-radius: 24px 24px 0 0; padding: 24px 20px max(env(safe-area-inset-bottom),24px); animation: slideUp .22s ease; max-height: 80vh; overflow-y: auto; }
+#addex-title { font-size: 22px; font-weight: 700; color: #1c1c1e; margin-bottom: 16px; }
+#addex-search { width: 100%; border: 2px solid #e5e5ea; border-radius: 12px; padding: 12px 16px; font-size: 18px; font-family: inherit; outline: none; margin-bottom: 14px; color: #1c1c1e; background: #fafafa; }
+#addex-list { margin-bottom: 14px; }
+.addex-item { padding: 14px 12px; border-radius: 12px; font-size: 18px; color: #1c1c1e; cursor: pointer; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; justify-content: space-between; }
+.addex-item:active { background: #f2f2f7; }
+.addex-item.already { color: #c7c7cc; }
+.addex-item .addex-plus { font-size: 22px; color: #34C759; font-weight: 300; }
+.addex-item.already .addex-plus { color: #d1d1d6; font-size: 16px; }
+#addex-cancel { width: 100%; padding: 16px; background: #f2f2f7; color: #1c1c1e; border: none; border-radius: 16px; font-size: 18px; font-weight: 600; cursor: pointer; font-family: inherit; margin-top: 4px; }
+
+/* ── MODAL ── */
+#modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); display: none; align-items: flex-end; z-index: 100; }
+#modal-overlay.open { display: flex; }
+#modal-box { width: 100%; background: #fff; border-radius: 24px 24px 0 0; padding: 28px 22px max(env(safe-area-inset-bottom),28px); animation: slideUp .22s ease; }
+@keyframes slideUp { from{transform:translateY(100%)}to{transform:translateY(0)} }
+#modal-title { font-size: 23px; font-weight: 700; color: #1c1c1e; margin-bottom: 8px; }
+#modal-body { font-size: 18px; color: #8e8e93; margin-bottom: 28px; line-height: 1.5; }
+#modal-confirm { width: 100%; padding: 18px; color: #fff; border: none; border-radius: 16px; font-size: 19px; font-weight: 700; cursor: pointer; margin-bottom: 12px; font-family: inherit; }
+#modal-cancel { width: 100%; padding: 18px; background: #f2f2f7; color: #1c1c1e; border: none; border-radius: 16px; font-size: 19px; font-weight: 600; cursor: pointer; font-family: inherit; }
+
+/* ── SUMMARY ── */
+#summary-screen { min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 80px 20px 40px; }
+#summary-icon { width: 84px; height: 84px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px; margin-bottom: 18px; }
+#summary-screen h2 { font-size: 28px; font-weight: 700; color: #1c1c1e; margin-bottom: 6px; }
+#summary-screen .sub { font-size: 20px; color: #8e8e93; margin-bottom: 30px; }
+#summary-card { background: #fff; border-radius: 22px; padding: 4px 22px; width: 100%; box-shadow: 0 2px 10px rgba(0,0,0,.07); margin-bottom: 30px; }
+.summary-row { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid #f0f0f0; }
+.summary-row:last-child { border-bottom: none; }
+.summary-row .slabel { font-size: 18px; color: #8e8e93; }
+.summary-row .sval { font-size: 18px; font-weight: 600; color: #1c1c1e; }
+#btn-home { width: 100%; padding: 18px; color: #fff; border: none; border-radius: 16px; font-size: 19px; font-weight: 700; cursor: pointer; font-family: inherit; }
+
+/* Install banner */
+#install-banner { margin: 12px 16px 0; background: #007AFF15; border-radius: 16px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; }
+#install-banner .ib-text { flex: 1; font-size: 15px; color: #007AFF; font-weight: 500; line-height: 1.4; }
+#install-banner .ib-close { background: none; border: none; font-size: 20px; color: #007AFF; cursor: pointer; padding: 0; }
+
+/* ── HISTORY SCREEN ── */
+#hist-topbar { background: #fff; border-bottom: 1px solid #e5e5ea; padding: max(env(safe-area-inset-top),44px) 20px 16px; position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 12px; }
+#hist-topbar h2 { font-size: 26px; font-weight: 700; color: #1c1c1e; flex: 1; }
+#btn-hist-back { background: none; border: none; cursor: pointer; font-size: 18px; font-weight: 600; color: #007AFF; padding: 0; flex-shrink: 0; }
+#hist-body { padding: 16px 16px 80px; }
+.hist-month { font-size: 15px; color: #8e8e93; font-weight: 600; text-transform: uppercase; letter-spacing: .3px; margin: 18px 0 8px 4px; }
+.hist-entry {
+  background: #fff; border-radius: 18px; margin-bottom: 10px;
+  box-shadow: 0 1px 5px rgba(0,0,0,.07); overflow: hidden;
+}
+.hist-entry-header { display: flex; align-items: center; gap: 14px; padding: 16px 18px; cursor: pointer; }
+.hist-entry-icon { width: 46px; height: 46px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
+.hist-entry-info { flex: 1; }
+.hist-entry-name { font-size: 20px; font-weight: 700; color: #1c1c1e; }
+.hist-entry-sub { font-size: 15px; color: #8e8e93; margin-top: 3px; }
+.hist-entry-arrow { font-size: 15px; color: #c7c7cc; transition: transform .2s; }
+.hist-entry-arrow.open { transform: rotate(90deg); }
+.hist-detail { display: none; padding: 0 18px 16px; border-top: 1px solid #f2f2f7; }
+.hist-detail.open { display: block; }
+.hist-detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f5f5f7; }
+.hist-detail-row:last-child { border-bottom: none; }
+.hist-detail-row .hdl { font-size: 16px; color: #8e8e93; }
+.hist-detail-row .hdv { font-size: 16px; font-weight: 600; color: #1c1c1e; }
+.hist-delete-btn { width: 100%; margin-top: 12px; padding: 13px; background: #fff0f0; color: #ff3b30; border: 1.5px solid #ff3b3030; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; font-family: inherit; }
+.hist-empty { text-align: center; padding: 60px 20px; color: #8e8e93; font-size: 18px; }
+</style>
+</head>
+<body>
+
+<!-- INSTALL HINT -->
+<div id="install-banner" style="display:none">
+  <span style="font-size:22px">📱</span>
+  <div class="ib-text">Per avere l'icona: Safari → <b>Condividi</b> (□↑) → <b>Aggiungi alla schermata Home</b></div>
+  <button class="ib-close" onclick="dismissInstall()">✕</button>
+</div>
+
+<!-- HISTORY SCREEN -->
+<div id="screen-history" class="screen">
+  <div id="hist-topbar">
+    <button id="btn-hist-back" onclick="showScreen('dashboard')">← Indietro</button>
+    <h2>Storico</h2>
+    <button onclick="askClearAll()" style="background:none;border:none;color:#ff3b30;font-size:16px;font-weight:600;cursor:pointer;padding:0;font-family:inherit;">Cancella tutto</button>
+  </div>
+  <div id="hist-body"></div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="screen-dashboard" class="screen active">
+  <div id="dash-header">
+    <div class="subtitle" id="today-date"></div>
+    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-top:6px;">
+      <h1>Buon allenamento</h1>
+      <button onclick="openHistory()" style="background:none;border:none;color:#007AFF;font-size:17px;font-weight:600;cursor:pointer;padding:0;font-family:inherit;">Storico →</button>
+    </div>
+  </div>
+  <div id="active-banner" onclick="resumeSession()">
+    <div class="ab-dot"></div>
+    <div class="ab-info">
+      <div class="ab-title" id="ab-title">Sessione in corso</div>
+      <div class="ab-sub" id="ab-sub">Tocca per riprendere</div>
+    </div>
+    <div class="ab-arrow">›</div>
+  </div>
+  <div class="section-label">Scegli la seduta</div>
+  <div id="workout-grid"></div>
+  <div id="history-section"></div>
+</div>
+
+<!-- SESSION -->
+<div id="screen-session" class="screen">
+  <div id="session-topbar">
+    <div class="toprow">
+      <button id="btn-back" onclick="askBack()">← Home</button>
+      <span id="session-timer-display"></span>
+      <button id="btn-end" onclick="askEnd()">Fine</button>
+    </div>
+    <div id="session-title"></div>
+  </div>
+
+  <!-- COUNTDOWN -->
+  <div id="countdown-bar">
+    <div id="countdown-display" style="color:#1c1c1e">–:––</div>
+    <div id="countdown-controls">
+      <button class="cd-btn cd-preset" onclick="setCD(60)">1 min</button>
+      <button class="cd-btn cd-preset" onclick="setCD(90)">90 sec</button>
+      <button class="cd-btn cd-preset" onclick="setCD(120)">2 min</button>
+      <button class="cd-btn cd-preset" onclick="setCD(180)">3 min</button>
+      <button class="cd-btn cd-start" id="cd-startstop" onclick="toggleCD()" style="background:#34C759">▶ Avvia</button>
+      <button class="cd-btn cd-mute" id="cd-mute" onclick="toggleMute()" title="Muto">🔔</button>
+    </div>
+  </div>
+
+  <div id="exercise-list"></div>
+</div>
+
+<!-- SUMMARY -->
+<div id="screen-summary" class="screen">
+  <div id="summary-screen">
+    <div id="summary-icon"></div>
+    <h2>Completato!</h2>
+    <div class="sub" id="summary-workout-name"></div>
+    <div id="summary-card"></div>
+    <button id="btn-home" onclick="goHome()">Torna alla Home</button>
+  </div>
+</div>
+
+<!-- MODAL FINE/BACK -->
+<div id="modal-overlay" onclick="closeModal()">
+  <div id="modal-box" onclick="event.stopPropagation()">
+    <div id="modal-title"></div>
+    <div id="modal-body"></div>
+    <button id="modal-confirm"></button>
+    <button id="modal-cancel" onclick="closeModal()">Annulla</button>
+  </div>
+</div>
+
+<!-- ADD EXERCISE MODAL -->
+<div id="addex-overlay" onclick="closeAddEx()">
+  <div id="addex-box" onclick="event.stopPropagation()">
+    <div id="addex-title">Aggiungi esercizio</div>
+    <input id="addex-search" type="text" placeholder="Cerca esercizio..." oninput="filterAddEx(this.value)">
+    <div id="addex-list"></div>
+    <button id="addex-cancel" onclick="closeAddEx()">Annulla</button>
+  </div>
+</div>
+
+<script>
+// ── DATI ──────────────────────────────────────────────────────────────────
+const BASE_WORKOUTS = {
+  Push: { color:"#FF6B35", icon:"↑", exercises:[
+    "Spinte con manubri panca piana","Chest Press inclinata","Lento avanti con bilanciere",
+    "Alzate laterali con manubri su panca piana","Push down con barra","Distensioni dietro","Cardio zona 3"
+  ]},
+  Pull: { color:"#007AFF", icon:"↓", exercises:[
+    "Lat machine presa prona","Seated Row","Curl panca Scott con manubrio singolo",
+    "Hammer curl","Crunch al cavo alto","Cardio zona 3"
+  ]},
+  Legs: { color:"#34C759", icon:"⬇", exercises:[
+    "Stacco e gambe tese con bilanciere","Leg press a 45°","Leg Extension",
+    "Leg Curl da seduto","Adductor","Polpacci con ginocchio esteso","Crunch al cavo alto","Cardio zona 3"
+  ]},
+  Upper: { color:"#AF52DE", icon:"◈", exercises:[
+    "Panca inclinata con bilanciere","Pectoral machine","Rematore con manubri panca 30°",
+    "Lat machine presa prona (stretta)","Alzate laterali con manubri su panca",
+    "Curl panca Scott bilanciere EZ","Push down con barre","Cardio zona 3"
+  ]}
+};
+
+// Tutti gli esercizi disponibili (pool da cui aggiungere)
+const ALL_EXERCISES = [
+  "Spinte con manubri panca piana","Chest Press inclinata","Lento avanti con bilanciere",
+  "Alzate laterali con manubri su panca piana","Push down con barra","Distensioni dietro",
+  "Lat machine presa prona","Seated Row","Curl panca Scott con manubrio singolo",
+  "Hammer curl","Crunch al cavo alto","Stacco e gambe tese con bilanciere",
+  "Leg press a 45°","Leg Extension","Leg Curl da seduto","Adductor",
+  "Polpacci con ginocchio esteso","Panca inclinata con bilanciere","Pectoral machine",
+  "Rematore con manubri panca 30°","Lat machine presa prona (stretta)",
+  "Alzate laterali con manubri su panca","Curl panca Scott bilanciere EZ",
+  "Push down con barre","Cardio zona 3","Plank","Crunch","Dips alle parallele",
+  "Chin-up","Pull-up","Facepull al cavo","Scrollate con manubri","Calf raise in piedi",
+  "Hip thrust","Bulgarian split squat","Affondi con manubri","Romanian deadlift",
+  "Pec deck","Cable crossover","Incline dumbbell curl","Concentration curl",
+  "Tricep overhead extension","Skull crushers","Arnold press","Lateral raise al cavo"
+];
+
+const CARDIO_NAME = "Cardio zona 3";
+const SETS_NORMAL = 4;
+const SETS_CARDIO = 1;
+const REPS_NORMAL_MIN = 8;
+const REPS_NORMAL_MAX = 12;
+const REPS_NORMAL_DEF = 12;
+const REPS_CARDIO = 10; // minuti
+
+const SK_SESSION = "gym_active_v3";
+const SK_HISTORY = "gym_history_v2";
+const SK_INSTALL = "gym_install_dismissed";
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+let currentWorkout = null;
+let sessionStart = null;
+let timerInterval = null;
+let modalAction = null;
+let setsState = {};       // { exIndex: [{reps,weight,done},...] }
+let sessionExercises = []; // lista esercizi della sessione corrente (può crescere)
+
+// Countdown state
+let cdSeconds = 90;
+let cdRemaining = 90;
+let cdRunning = false;
+let cdInterval = null;
+let cdMuted = false;
+let audioCtx = null;
+
+// ── STORAGE ────────────────────────────────────────────────────────────────
+function loadHistory(){ try{return JSON.parse(localStorage.getItem(SK_HISTORY)||"[]")}catch{return[]} }
+function saveHistory(h){ try{localStorage.setItem(SK_HISTORY,JSON.stringify(h))}catch{} }
+function saveActive(){
+  if(!currentWorkout||!sessionStart) return;
+  try{ localStorage.setItem(SK_SESSION,JSON.stringify({
+    workout:currentWorkout, startTime:sessionStart.getTime(),
+    setsState:setsState, exercises:sessionExercises
+  }))}catch{}
+}
+function loadActive(){ try{return JSON.parse(localStorage.getItem(SK_SESSION)||"null")}catch{return null} }
+function clearActive(){ try{localStorage.removeItem(SK_SESSION)}catch{} }
+
+// ── UTILS ──────────────────────────────────────────────────────────────────
+function fmtTime(d){ return d.toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"}) }
+function fmtDate(d){ return d.toLocaleDateString("it-IT",{weekday:"long",day:"numeric",month:"long",year:"numeric"}) }
+function fmtDateShort(d){ return new Date(d).toLocaleDateString("it-IT",{day:"numeric",month:"short"}) }
+function fmtDateMed(d){ return new Date(d).toLocaleDateString("it-IT",{weekday:"short",day:"numeric",month:"short"}) }
+function fmtDur(ms){
+  const m=Math.floor(ms/60000), s=Math.floor((ms%60000)/1000);
+  return m+"′ "+s.toString().padStart(2,"0")+"″";
+}
+function fmtCD(sec){
+  const m=Math.floor(sec/60), s=sec%60;
+  return m+":"+(s.toString().padStart(2,"0"));
+}
+function isCardio(name){ return name===CARDIO_NAME; }
+function getSets(name){ return isCardio(name)?SETS_CARDIO:SETS_NORMAL; }
+function getRepsMin(name){ return isCardio(name)?REPS_CARDIO:REPS_NORMAL_MIN; }
+function getRepsMax(name){ return isCardio(name)?REPS_CARDIO:REPS_NORMAL_MAX; }
+function getRepsDef(name){ return isCardio(name)?REPS_CARDIO:REPS_NORMAL_DEF; }
+function getRepsLabel(name){ return isCardio(name)?"min":"rip"; }
+
+function showScreen(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById("screen-"+id).classList.add("active");
+  window.scrollTo(0,0);
+}
+
+// ── INSTALL BANNER ─────────────────────────────────────────────────────────
+function checkInstallBanner(){
+  const dismissed = localStorage.getItem(SK_INSTALL);
+  const isStandalone = window.navigator.standalone===true;
+  if(!dismissed && !isStandalone){
+    document.getElementById("install-banner").style.display="flex";
+  }
+}
+function dismissInstall(){
+  localStorage.setItem(SK_INSTALL,"1");
+  document.getElementById("install-banner").style.display="none";
+}
+
+// ── DASHBOARD ──────────────────────────────────────────────────────────────
+function renderDashboard(){
+  document.getElementById("today-date").textContent = fmtDate(new Date());
+  const grid = document.getElementById("workout-grid");
+  grid.innerHTML="";
+  const history = loadHistory();
+
+  Object.entries(BASE_WORKOUTS).forEach(([name,data])=>{
+    const last = history.filter(h=>h.workout===name).slice(-1)[0];
+    const card = document.createElement("button");
+    card.className="workout-card";
+    card.innerHTML=
+      '<div class="blob" style="background:'+data.color+'"></div>'+
+      '<div class="wicon" style="color:'+data.color+'">'+data.icon+'</div>'+
+      '<div class="wname">'+name+'</div>'+
+      '<div class="wcount">'+data.exercises.length+' esercizi</div>'+
+      (last?'<div class="wlast" style="color:'+data.color+'">Ultima: '+fmtDateShort(last.date)+'</div>':"");
+    card.onclick=()=>startSession(name);
+    grid.appendChild(card);
+  });
+
+  // Banner sessione attiva
+  const active = loadActive();
+  const banner = document.getElementById("active-banner");
+  if(active && BASE_WORKOUTS[active.workout]){
+    const elapsed = Date.now()-active.startTime;
+    document.getElementById("ab-title").textContent = active.workout+" in corso";
+    document.getElementById("ab-sub").textContent = fmtDur(elapsed)+" · Tocca per riprendere";
+    banner.classList.add("show");
+  } else { banner.classList.remove("show"); }
+
+  const histSection = document.getElementById("history-section");
+  const recent = history.slice(-4).reverse();
+  if(!recent.length){ histSection.innerHTML=""; return; }
+  histSection.innerHTML='<div class="section-label">Sessioni recenti</div><div id="history-list"></div>';
+  const list = document.getElementById("history-list");
+  recent.forEach(s=>{
+    const w=BASE_WORKOUTS[s.workout]||{color:"#8e8e93",icon:"●"};
+    const item=document.createElement("div");
+    item.className="history-item";
+    item.innerHTML=
+      '<div class="history-icon" style="background:'+w.color+'20;color:'+w.color+'">'+w.icon+'</div>'+
+      '<div><div class="hname">'+s.workout+'</div>'+
+      '<div class="hinfo">'+fmtDateMed(s.date)+" · "+s.startTime+(s.duration?" · "+fmtDur(s.duration):"")+
+      '</div></div>';
+    list.appendChild(item);
+  });
+}
+
+// ── SESSION ────────────────────────────────────────────────────────────────
+function startSession(name, savedStart, savedSets, savedExercises){
+  currentWorkout = name;
+  sessionStart = savedStart ? new Date(savedStart) : new Date();
+  const data = BASE_WORKOUTS[name];
+
+  sessionExercises = savedExercises ? savedExercises : [...data.exercises];
+
+  if(savedSets){
+    setsState = savedSets;
+    // assicura che esercizi aggiunti abbiano setsState
+    sessionExercises.forEach((_,ei)=>{
+      if(!setsState[ei]){
+        setsState[ei] = initSets(sessionExercises[ei]);
+      }
+    });
+  } else {
+    setsState = {};
+    sessionExercises.forEach((ex,ei)=>{ setsState[ei]=initSets(ex); });
+  }
+
+  document.getElementById("btn-back").style.color = data.color;
+  document.getElementById("btn-end").style.background = data.color;
+  document.getElementById("session-title").textContent = name;
+  document.getElementById("cd-startstop").style.background = data.color;
+
+  renderExercises();
+  showScreen("session");
+  startSessionTimer();
+  saveActive();
+}
+
+function initSets(exName){
+  const n = getSets(exName);
+  const def = getRepsDef(exName);
+  return Array.from({length:n}, ()=>({reps:def, weight:"", done:false}));
+}
+
+function resumeSession(){
+  const active = loadActive();
+  if(!active||!BASE_WORKOUTS[active.workout]) return;
+  startSession(active.workout, active.startTime, active.setsState, active.exercises);
+}
+
+function startSessionTimer(){
+  clearInterval(timerInterval);
+  updateSessionTimer();
+  timerInterval = setInterval(()=>{ updateSessionTimer(); saveActive(); }, 1000);
+}
+
+function updateSessionTimer(){
+  const elapsed = Date.now()-sessionStart.getTime();
+  document.getElementById("session-timer-display").textContent =
+    "Inizio "+fmtTime(sessionStart)+" · "+fmtDur(elapsed);
+}
+
+// ── RENDER ESERCIZI ────────────────────────────────────────────────────────
+function renderExercises(){
+  const list = document.getElementById("exercise-list");
+  list.innerHTML="";
+  sessionExercises.forEach((ex,ei)=>{
+    list.appendChild(buildExCard(ex,ei));
+  });
+  // Pulsante aggiungi esercizio
+  const addRow = document.createElement("div");
+  addRow.className="add-ex-row";
+  addRow.innerHTML='<button class="add-ex-btn" onclick="openAddEx()">＋ Aggiungi esercizio</button>';
+  list.appendChild(addRow);
+}
+
+function buildExCard(ex, ei){
+  const cardio = isCardio(ex);
+  const sets = setsState[ei] || initSets(ex);
+  const doneSets = sets.filter(s => s.done).length;
+  const allDone = doneSets === sets.length;
+  const color = BASE_WORKOUTS[currentWorkout].color;
+  const dotColor = allDone ? color : doneSets > 0 ? color + "80" : "#d1d1d6";
+
+  // Card wrapper
+  const card = document.createElement("div");
+  card.className = "ex-card";
+  card.id = "ex-card-" + ei;
+  card.style.borderColor = allDone ? color + "50" : "transparent";
+
+  // Header button
+  const header = document.createElement("button");
+  header.className = "ex-header";
+  header.onclick = function(){ toggleEx(ei); };
+
+  const dot = document.createElement("div");
+  dot.className = "ex-dot";
+  dot.id = "ex-dot-" + ei;
+  dot.style.background = dotColor;
+
+  const info = document.createElement("div");
+  info.className = "ex-info";
+
+  const nameEl = document.createElement("div");
+  nameEl.className = "ex-name";
+  nameEl.textContent = ex;
+
+  const progEl = document.createElement("div");
+  progEl.className = "ex-progress";
+  progEl.id = "ex-prog-" + ei;
+  progEl.textContent = doneSets + "/" + sets.length + " " + (cardio ? "completato" : "serie completate");
+
+  info.appendChild(nameEl);
+  info.appendChild(progEl);
+
+  const chev = document.createElement("span");
+  chev.className = "ex-chevron" + (ei === 0 ? " open" : "");
+  chev.id = "ex-chev-" + ei;
+  chev.textContent = "▼";
+
+  header.appendChild(dot);
+  header.appendChild(info);
+  header.appendChild(chev);
+
+  // Body
+  const body = document.createElement("div");
+  body.className = "ex-body" + (ei === 0 ? " open" : "");
+  body.id = "ex-body-" + ei;
+
+  // Sets header row
+  const sh = document.createElement("div");
+  sh.className = "sets-header";
+  sh.innerHTML = "<span></span>" +
+    "<span style='padding-left:32px'>" + (cardio ? "MINUTI" : "RIPETIZIONI") + "</span>" +
+    "<span style='padding-left:32px'>" + (cardio ? "" : "PESO") + "</span>" +
+    "<span></span>";
+  body.appendChild(sh);
+
+  // Set rows
+  for(let si = 0; si < sets.length; si++){
+    const s = sets[si];
+
+    const row = document.createElement("div");
+    row.className = "set-row" + (s.done ? " done" : "");
+    row.id = "set-row-" + ei + "-" + si;
+
+    // Number
+    const num = document.createElement("span");
+    num.className = "set-num";
+    num.textContent = si + 1;
+
+    // Reps field
+    const repsField = document.createElement("div");
+    repsField.className = "set-field";
+    const repsLabel = document.createElement("span");
+    repsLabel.className = "set-label";
+    repsLabel.textContent = getRepsLabel(ex);
+    const sel = document.createElement("select");
+    sel.disabled = cardio;
+    (function(capturedEi, capturedSi){ sel.onchange = function(){ updateSet(capturedEi, capturedSi, "reps", this.value); }; })(ei, si);
+    if(cardio){
+      const opt = document.createElement("option");
+      opt.value = REPS_CARDIO; opt.textContent = REPS_CARDIO; opt.selected = true;
+      sel.appendChild(opt);
+    } else {
+      for(let r = getRepsMin(ex); r <= getRepsMax(ex); r++){
+        const opt = document.createElement("option");
+        opt.value = r; opt.textContent = r;
+        if(r === s.reps) opt.selected = true;
+        sel.appendChild(opt);
+      }
+    }
+    repsField.appendChild(repsLabel);
+    repsField.appendChild(sel);
+
+    // Weight field
+    const wField = document.createElement("div");
+    wField.className = "set-field";
+    const wLabel = document.createElement("span");
+    wLabel.className = "set-label";
+    wLabel.textContent = cardio ? "min" : "kg";
+    const wInput = document.createElement("input");
+    wInput.type = "number"; wInput.min = "0"; wInput.step = cardio ? "1" : "0.5";
+    wInput.placeholder = cardio ? "10" : "—";
+    wInput.value = s.weight || "";
+    wInput.disabled = cardio;
+    (function(capturedEi, capturedSi){ wInput.oninput = function(){ updateSet(capturedEi, capturedSi, "weight", this.value); }; })(ei, si);
+    wField.appendChild(wLabel);
+    wField.appendChild(wInput);
+
+    // Done button
+    const doneBtn = document.createElement("button");
+    doneBtn.className = "btn-done" + (s.done ? " checked" : "");
+    doneBtn.id = "btn-done-" + ei + "-" + si;
+    doneBtn.textContent = "✓";
+    doneBtn.style.background = s.done ? color : "#e5e5ea";
+    doneBtn.style.color = s.done ? "#fff" : "#8e8e93";
+    (function(capturedEi, capturedSi){ doneBtn.onclick = function(){ toggleDone(capturedEi, capturedSi); }; })(ei, si);
+
+    row.appendChild(num);
+    row.appendChild(repsField);
+    row.appendChild(wField);
+    row.appendChild(doneBtn);
+    body.appendChild(row);
+  }
+
+  card.appendChild(header);
+  card.appendChild(body);
+  return card;
+}
+
+function reRenderExCard(ei){
+  const old = document.getElementById("ex-card-"+ei);
+  if(!old) return;
+  const wasOpen = document.getElementById("ex-body-"+ei)&&document.getElementById("ex-body-"+ei).classList.contains("open");
+  const newCard = buildExCard(sessionExercises[ei], ei);
+  old.replaceWith(newCard);
+  if(wasOpen){
+    document.getElementById("ex-body-"+ei).classList.add("open");
+    document.getElementById("ex-chev-"+ei).classList.add("open");
+  }
+}
+
+function toggleEx(ei){
+  document.getElementById("ex-body-"+ei).classList.toggle("open");
+  document.getElementById("ex-chev-"+ei).classList.toggle("open");
+}
+
+function updateSet(ei,si,field,value){
+  if(!setsState[ei]) setsState[ei]=initSets(sessionExercises[ei]);
+  setsState[ei][si][field] = field==="reps"?parseInt(value):value;
+  saveActive();
+}
+
+function toggleDone(ei,si){
+  if(!setsState[ei]) setsState[ei]=initSets(sessionExercises[ei]);
+  setsState[ei][si].done = !setsState[ei][si].done;
+  reRenderExCard(ei);
+  saveActive();
+}
+
+// ── AGGIUNGI ESERCIZIO ─────────────────────────────────────────────────────
+function openAddEx(){
+  filterAddEx("");
+  document.getElementById("addex-search").value="";
+  document.getElementById("addex-overlay").classList.add("open");
+  setTimeout(()=>document.getElementById("addex-search").focus(),300);
+}
+function closeAddEx(){
+  document.getElementById("addex-overlay").classList.remove("open");
+}
+function filterAddEx(query){
+  const q = query.toLowerCase().trim();
+  const filtered = ALL_EXERCISES.filter(e=> !q || e.toLowerCase().includes(q));
+  const container = document.getElementById("addex-list");
+  container.innerHTML="";
+  filtered.forEach(ex=>{
+    const already = sessionExercises.includes(ex);
+    const item = document.createElement("div");
+    item.className="addex-item"+(already?" already":"");
+    item.innerHTML='<span>'+ex+'</span><span class="addex-plus">'+(already?"✓ già presente":"+"+'</span>');
+    if(!already) item.onclick=()=>addExercise(ex);
+    container.appendChild(item);
+  });
+}
+function addExercise(ex){
+  const ei = sessionExercises.length;
+  sessionExercises.push(ex);
+  setsState[ei] = initSets(ex);
+
+  // Inserisci prima del bottone "Aggiungi"
+  const list = document.getElementById("exercise-list");
+  const addRow = list.querySelector(".add-ex-row");
+  const newCard = buildExCard(ex, ei);
+  list.insertBefore(newCard, addRow);
+
+  saveActive();
+  closeAddEx();
+  // Scroll fino al nuovo esercizio
+  setTimeout(()=>newCard.scrollIntoView({behavior:"smooth", block:"center"}),200);
+}
+
+// ── COUNTDOWN ─────────────────────────────────────────────────────────────
+function setCD(sec){
+  stopCD();
+  cdSeconds = sec;
+  cdRemaining = sec;
+  updateCDDisplay(cdRemaining, false);
+}
+function toggleCD(){
+  if(cdRunning) stopCD(); else startCD();
+}
+function startCD(){
+  if(cdRemaining<=0) cdRemaining=cdSeconds;
+  cdRunning=true;
+  document.getElementById("cd-startstop").textContent="⏸ Pausa";
+  document.getElementById("cd-startstop").style.background="#ff9500";
+  cdInterval = setInterval(()=>{
+    cdRemaining--;
+    updateCDDisplay(cdRemaining, cdRemaining<=5);
+    if(cdRemaining<=0){
+      stopCD();
+      if(!cdMuted) playBeep();
+    }
+  },1000);
+}
+function stopCD(){
+  cdRunning=false;
+  clearInterval(cdInterval);
+  const color = currentWorkout?BASE_WORKOUTS[currentWorkout].color:"#34C759";
+  document.getElementById("cd-startstop").textContent="▶ Avvia";
+  document.getElementById("cd-startstop").style.background=color;
+  if(cdRemaining<=0){ cdRemaining=cdSeconds; updateCDDisplay(cdRemaining,false); }
+}
+function updateCDDisplay(sec, urgent){
+  const el = document.getElementById("countdown-display");
+  el.textContent = fmtCD(sec);
+  el.style.color = urgent?"#ff3b30":sec===cdSeconds?"#1c1c1e":"#007AFF";
+}
+function toggleMute(){
+  cdMuted=!cdMuted;
+  document.getElementById("cd-mute").textContent=cdMuted?"🔕":"🔔";
+}
+function playBeep(){
+  try{
+    if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    const beeps=[0,300,600];
+    beeps.forEach(offset=>{
+      const osc=audioCtx.createOscillator();
+      const gain=audioCtx.createGain();
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.frequency.value=880;
+      gain.gain.setValueAtTime(0.6,audioCtx.currentTime+offset/1000);
+      gain.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+offset/1000+0.25);
+      osc.start(audioCtx.currentTime+offset/1000);
+      osc.stop(audioCtx.currentTime+offset/1000+0.3);
+    });
+  }catch(e){}
+}
+
+// ── FINE SESSIONE ──────────────────────────────────────────────────────────
+function askEnd(){
+  const elapsed=Date.now()-sessionStart.getTime();
+  showModal("Termina allenamento?","Durata: "+fmtDur(elapsed)+". I dati verranno salvati.",
+    BASE_WORKOUTS[currentWorkout].color,"Sì, termina",endSession);
+}
+function askBack(){
+  showModal("Tornare alla home?","La sessione rimane attiva, potrai riprenderla.",
+    "#007AFF","Sì, vai alla home",()=>{ closeModal(); clearInterval(timerInterval); stopCD(); goHome(); });
+}
+function endSession(){
+  clearInterval(timerInterval); stopCD(); clearActive();
+  const endTime=new Date();
+  const session={
+    workout:currentWorkout, date:sessionStart.toISOString(),
+    startTime:fmtTime(sessionStart), endTime:fmtTime(endTime),
+    duration:endTime-sessionStart
+  };
+  const h=loadHistory(); h.push(session); saveHistory(h);
+  renderSummary(session); closeModal(); showScreen("summary");
+}
+function goHome(){ clearInterval(timerInterval); stopCD(); renderDashboard(); showScreen("dashboard"); }
+
+// ── SUMMARY ────────────────────────────────────────────────────────────────
+function renderSummary(s){
+  const data=BASE_WORKOUTS[s.workout];
+  const icon=document.getElementById("summary-icon");
+  icon.style.background=data.color+"20"; icon.style.color=data.color; icon.textContent="✓";
+  document.getElementById("summary-workout-name").textContent=s.workout;
+  document.getElementById("btn-home").style.background=data.color;
+  const rows=[["Data",fmtDate(new Date(s.date))],["Inizio",s.startTime],["Fine",s.endTime],["Durata",fmtDur(s.duration)]];
+  document.getElementById("summary-card").innerHTML=rows.map(r=>
+    '<div class="summary-row"><span class="slabel">'+r[0]+'</span><span class="sval">'+r[1]+'</span></div>'
+  ).join("");
+}
+
+// ── MODAL ──────────────────────────────────────────────────────────────────
+function showModal(title,body,color,confirmLabel,action){
+  document.getElementById("modal-title").textContent=title;
+  document.getElementById("modal-body").textContent=body;
+  document.getElementById("modal-confirm").textContent=confirmLabel;
+  document.getElementById("modal-confirm").style.background=color;
+  modalAction=action;
+  document.getElementById("modal-overlay").classList.add("open");
+}
+document.getElementById("modal-confirm").onclick=()=>{ if(modalAction) modalAction(); };
+function closeModal(){ document.getElementById("modal-overlay").classList.remove("open"); modalAction=null; }
+
+// ── STORICO ────────────────────────────────────────────────────────────────
+function openHistory(){
+  renderHistory();
+  showScreen("history");
+}
+
+function renderHistory(){
+  const history = loadHistory();
+  const body = document.getElementById("hist-body");
+  body.innerHTML = "";
+
+  if(!history.length){
+    body.innerHTML = '<div class="hist-empty">Nessuna sessione registrata</div>';
+    return;
+  }
+
+  // Raggruppa per mese
+  const groups = {};
+  history.slice().reverse().forEach(function(s, idx){
+    const d = new Date(s.date);
+    const key = d.getFullYear() + "-" + d.getMonth();
+    const label = d.toLocaleDateString("it-IT", {month:"long", year:"numeric"});
+    if(!groups[key]) groups[key] = {label:label, entries:[]};
+    // indice nell'array originale (non invertito)
+    groups[key].entries.push({s:s, origIdx: history.length - 1 - idx});
+  });
+
+  Object.values(groups).forEach(function(g){
+    const monthEl = document.createElement("div");
+    monthEl.className = "hist-month";
+    monthEl.textContent = g.label.charAt(0).toUpperCase() + g.label.slice(1);
+    body.appendChild(monthEl);
+
+    g.entries.forEach(function(entry){
+      body.appendChild(buildHistEntry(entry.s, entry.origIdx));
+    });
+  });
+}
+
+function buildHistEntry(s, origIdx){
+  const w = BASE_WORKOUTS[s.workout] || {color:"#8e8e93", icon:"●"};
+  const d = new Date(s.date);
+  const dateStr = d.toLocaleDateString("it-IT", {weekday:"long", day:"numeric", month:"long"});
+
+  const wrap = document.createElement("div");
+  wrap.className = "hist-entry";
+  wrap.id = "hist-entry-" + origIdx;
+
+  const header = document.createElement("div");
+  header.className = "hist-entry-header";
+  header.onclick = function(){ toggleHistDetail(origIdx); };
+
+  const icon = document.createElement("div");
+  icon.className = "hist-entry-icon";
+  icon.style.background = w.color + "20";
+  icon.style.color = w.color;
+  icon.textContent = w.icon;
+
+  const info = document.createElement("div");
+  info.className = "hist-entry-info";
+
+  const name = document.createElement("div");
+  name.className = "hist-entry-name";
+  name.textContent = s.workout;
+
+  const sub = document.createElement("div");
+  sub.className = "hist-entry-sub";
+  sub.textContent = dateStr + " · " + s.startTime;
+
+  info.appendChild(name);
+  info.appendChild(sub);
+
+  const arrow = document.createElement("span");
+  arrow.className = "hist-entry-arrow";
+  arrow.id = "hist-arrow-" + origIdx;
+  arrow.textContent = "›";
+
+  header.appendChild(icon);
+  header.appendChild(info);
+  header.appendChild(arrow);
+
+  const detail = document.createElement("div");
+  detail.className = "hist-detail";
+  detail.id = "hist-detail-" + origIdx;
+
+  const rows = [
+    ["Data", dateStr],
+    ["Inizio", s.startTime],
+    ["Fine", s.endTime || "—"],
+    ["Durata", s.duration ? fmtDur(s.duration) : "—"]
+  ];
+  rows.forEach(function(r){
+    const row = document.createElement("div");
+    row.className = "hist-detail-row";
+    row.innerHTML = '<span class="hdl">'+r[0]+'</span><span class="hdv">'+r[1]+'</span>';
+    detail.appendChild(row);
+  });
+
+  const delBtn = document.createElement("button");
+  delBtn.className = "hist-delete-btn";
+  delBtn.textContent = "🗑  Elimina questa sessione";
+  (function(i){ delBtn.onclick = function(){ askDeleteSession(i); }; })(origIdx);
+  detail.appendChild(delBtn);
+
+  wrap.appendChild(header);
+  wrap.appendChild(detail);
+  return wrap;
+}
+
+function toggleHistDetail(origIdx){
+  const detail = document.getElementById("hist-detail-" + origIdx);
+  const arrow = document.getElementById("hist-arrow-" + origIdx);
+  if(!detail) return;
+  detail.classList.toggle("open");
+  arrow.classList.toggle("open");
+}
+
+function askDeleteSession(origIdx){
+  showModal(
+    "Eliminare la sessione?",
+    "Questa azione non può essere annullata.",
+    "#ff3b30", "Sì, elimina",
+    function(){
+      const h = loadHistory();
+      h.splice(origIdx, 1);
+      saveHistory(h);
+      closeModal();
+      renderHistory();
+      renderDashboard(); // aggiorna anche le card con "Ultima"
+    }
+  );
+}
+
+function askClearAll(){
+  const h = loadHistory();
+  if(!h.length){ return; }
+  showModal(
+    "Cancellare tutto lo storico?",
+    "Verranno eliminate tutte le " + h.length + " sessioni registrate.",
+    "#ff3b30", "Sì, cancella tutto",
+    function(){
+      saveHistory([]);
+      closeModal();
+      renderHistory();
+      renderDashboard();
+    }
+  );
+}
+
+// ── INIT ───────────────────────────────────────────────────────────────────
+updateCDDisplay(cdRemaining,false);
+checkInstallBanner();
+renderDashboard();
+</script>
+</body>
+</html>
