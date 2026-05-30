@@ -825,10 +825,17 @@ function askBack(){
 function endSession(){
   clearInterval(timerInterval); stopCD(); clearActive();
   const endTime=new Date();
+  const exercises = sessionExercises.map(function(exName, ei){
+    const sets = (setsState[ei]||[]).map(function(s){
+      return { reps: s.reps, weight: s.weight, done: s.done };
+    });
+    return { name: exName, sets: sets };
+  });
   const session={
     workout:currentWorkout, date:sessionStart.toISOString(),
     startTime:fmtTime(sessionStart), endTime:fmtTime(endTime),
-    duration:endTime-sessionStart
+    duration:endTime-sessionStart,
+    exercises: exercises
   };
   const h=loadHistory(); h.push(session); saveHistory(h);
   renderSummary(session); closeModal(); showScreen("summary");
@@ -945,6 +952,7 @@ function buildHistEntry(s, origIdx){
   detail.className = "hist-detail";
   detail.id = "hist-detail-" + origIdx;
 
+  // Riepilogo tempi
   const rows = [
     ["Data", dateStr],
     ["Inizio", s.startTime],
@@ -957,6 +965,45 @@ function buildHistEntry(s, origIdx){
     row.innerHTML = '<span class="hdl">'+r[0]+'</span><span class="hdv">'+r[1]+'</span>';
     detail.appendChild(row);
   });
+
+  // Dettaglio esercizi
+  if(s.exercises && s.exercises.length){
+    const exTitle = document.createElement("div");
+    exTitle.style.cssText = "font-size:14px;color:#8e8e93;font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin:14px 0 8px;";
+    exTitle.textContent = "Esercizi";
+    detail.appendChild(exTitle);
+
+    s.exercises.forEach(function(ex){
+      const exWrap = document.createElement("div");
+      exWrap.style.cssText = "background:#f8f8f8;border-radius:12px;padding:12px 14px;margin-bottom:8px;";
+
+      const exName = document.createElement("div");
+      exName.style.cssText = "font-size:16px;font-weight:700;color:#1c1c1e;margin-bottom:8px;";
+      exName.textContent = ex.name;
+      exWrap.appendChild(exName);
+
+      ex.sets.forEach(function(set, si){
+        const setRow = document.createElement("div");
+        setRow.style.cssText = "display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #efefef;opacity:"+(set.done?"1":"0.4")+";";
+
+        const setLabel = document.createElement("span");
+        setLabel.style.cssText = "font-size:15px;color:#8e8e93;";
+        setLabel.textContent = "Serie "+(si+1);
+
+        const setVal = document.createElement("span");
+        setVal.style.cssText = "font-size:15px;font-weight:600;color:#1c1c1e;";
+        const w = set.weight ? set.weight+"kg" : "—";
+        const r = set.reps ? set.reps+" rip" : "—";
+        setVal.textContent = r + "  ·  " + w + (set.done ? "  ✓" : "");
+
+        setRow.appendChild(setLabel);
+        setRow.appendChild(setVal);
+        exWrap.appendChild(setRow);
+      });
+
+      detail.appendChild(exWrap);
+    });
+  }
 
   const delBtn = document.createElement("button");
   delBtn.className = "hist-delete-btn";
