@@ -1366,9 +1366,7 @@ function buildChart(sessions, color){
 // Precarica storico da vecchia app se non esiste ancora
 function preloadHistory(){
   var existing = loadHistory();
-  // Controlla se ci sono già sessioni importate
-  if(existing.some(function(s){ return s._imported; })) return;
-  // Se c'è già roba non toccare
+  // Ricarica sempre se lo storico è vuoto
   if(existing.length > 0) return;
 
   var imported = [
