@@ -1366,8 +1366,11 @@ function buildChart(sessions, color){
 // Precarica storico da vecchia app se non esiste ancora
 function preloadHistory(){
   var existing = loadHistory();
-  // Ricarica sempre se lo storico è vuoto
-  if(existing.length > 0) return;
+  // Ricarica se lo storico è vuoto O se ha meno di 3 sessioni importate
+  var importedCount = existing.filter(function(s){ return s._imported; }).length;
+  if(existing.length > 0 && importedCount >= 3) return;
+  // Rimuovi solo le sessioni importate precedenti, mantieni quelle nuove
+  var userSessions = existing.filter(function(s){ return !s._imported; });
 
   var imported = [
     {
@@ -1491,7 +1494,7 @@ function preloadHistory(){
     }
   ];
 
-  saveHistory(imported);
+  saveHistory(userSessions.concat(imported));
 }
 
 preloadHistory();
