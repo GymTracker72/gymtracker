@@ -1320,6 +1320,141 @@ function buildChart(sessions, color){
 }
 
 // ── INIT ───────────────────────────────────────────────────────────────────
+
+// Precarica storico da vecchia app se non esiste ancora
+function preloadHistory(){
+  var existing = loadHistory();
+  // Controlla se ci sono già sessioni importate
+  if(existing.some(function(s){ return s._imported; })) return;
+  // Se c'è già roba non toccare
+  if(existing.length > 0) return;
+
+  var imported = [
+    {
+      _imported: true,
+      workout: "Pull",
+      date: "2026-05-30T15:20:00.000Z",
+      startTime: "17:20",
+      endTime: "19:12",
+      duration: 6766000,
+      exercises: [
+        { name: "Lat machine presa prona", sets: [
+          {reps:11,weight:"35",done:true},{reps:11,weight:"45",done:true},
+          {reps:11,weight:"50",done:true},{reps:8,weight:"55",done:true}
+        ]},
+        { name: "Seated Row", sets: [
+          {reps:11,weight:"45",done:true},{reps:11,weight:"50",done:true},
+          {reps:11,weight:"55",done:true},{reps:11,weight:"55",done:true}
+        ]},
+        { name: "Curl panca Scott con manubrio singolo", sets: [
+          {reps:11,weight:"12",done:true},{reps:11,weight:"12",done:true},
+          {reps:11,weight:"12",done:true},{reps:10,weight:"12",done:true}
+        ]},
+        { name: "Hammer curl", sets: [
+          {reps:12,weight:"11",done:true},{reps:12,weight:"11",done:true},
+          {reps:12,weight:"11",done:true},{reps:12,weight:"11",done:true}
+        ]},
+        { name: "Crunch al cavo alto", sets: [
+          {reps:12,weight:"22.5",done:true},{reps:12,weight:"22.5",done:true},
+          {reps:12,weight:"27.5",done:true},{reps:12,weight:"30",done:true}
+        ]},
+        { name: "Cardio zona 3", sets: [
+          {reps:10,weight:"",done:true,cardioMin:10}
+        ]}
+      ]
+    },
+    {
+      _imported: true,
+      workout: "Upper",
+      date: "2026-06-02T10:03:00.000Z",
+      startTime: "12:03",
+      endTime: "15:57",
+      duration: 14000000,
+      exercises: [
+        { name: "Panca inclinata con bilanciere", sets: [
+          {reps:11,weight:"20",done:true},{reps:8,weight:"30",done:true},
+          {reps:8,weight:"30",done:true},{reps:8,weight:"30",done:true}
+        ]},
+        { name: "Pectoral machine", sets: [
+          {reps:11,weight:"30",done:true},{reps:8,weight:"52.5",done:true},
+          {reps:9,weight:"52.5",done:true},{reps:9,weight:"52.5",done:true}
+        ]},
+        { name: "Rematore con manubri panca 30°", sets: [
+          {reps:11,weight:"18",done:true},{reps:12,weight:"18",done:true},
+          {reps:12,weight:"18",done:true},{reps:12,weight:"18",done:true}
+        ]},
+        { name: "Lat machine presa prona (stretta)", sets: [
+          {reps:11,weight:"50",done:true},{reps:11,weight:"55",done:true},
+          {reps:8,weight:"60",done:true},{reps:12,weight:"60",done:false}
+        ]},
+        { name: "Alzate laterali con manubri su panca", sets: [
+          {reps:11,weight:"8",done:true},{reps:12,weight:"8",done:true},
+          {reps:11,weight:"8",done:true},{reps:11,weight:"8",done:true}
+        ]},
+        { name: "Curl panca Scott bilanciere EZ", sets: [
+          {reps:11,weight:"15",done:true},{reps:8,weight:"15",done:true},
+          {reps:8,weight:"15",done:true},{reps:12,weight:"15",done:true}
+        ]},
+        { name: "Push down con barre", sets: [
+          {reps:12,weight:"17.5",done:true},{reps:11,weight:"20",done:true},
+          {reps:11,weight:"22.5",done:true},{reps:12,weight:"22.5",done:true}
+        ]},
+        { name: "Cardio zona 3", sets: [
+          {reps:10,weight:"",done:false,cardioMin:10}
+        ]},
+        { name: "Adductor", sets: [
+          {reps:12,weight:"35",done:true},{reps:11,weight:"40",done:true},
+          {reps:12,weight:"40",done:true},{reps:12,weight:"40",done:true}
+        ]}
+      ]
+    },
+    {
+      _imported: true,
+      workout: "Push",
+      date: "2026-06-04T16:48:00.000Z",
+      startTime: "18:48",
+      endTime: "22:11",
+      duration: 12182000,
+      exercises: [
+        { name: "Spinte con manubri panca piana", sets: [
+          {reps:11,weight:"18",done:true},{reps:11,weight:"22",done:true},
+          {reps:12,weight:"22",done:true},{reps:12,weight:"24",done:true}
+        ]},
+        { name: "Chest Press inclinata", sets: [
+          {reps:11,weight:"18",done:true},{reps:11,weight:"18",done:true},
+          {reps:11,weight:"18",done:true},{reps:11,weight:"18",done:true}
+        ]},
+        { name: "Lento avanti con bilanciere", sets: [
+          {reps:11,weight:"20",done:true},{reps:12,weight:"20",done:true},
+          {reps:11,weight:"18",done:true},{reps:11,weight:"18",done:true}
+        ]},
+        { name: "Alzate laterali con manubri su panca piana", sets: [
+          {reps:8,weight:"10",done:true},{reps:9,weight:"10",done:true},
+          {reps:12,weight:"10",done:true},{reps:12,weight:"10",done:true}
+        ]},
+        { name: "Push down con barra", sets: [
+          {reps:11,weight:"22.5",done:true},{reps:11,weight:"22.5",done:true},
+          {reps:12,weight:"22.5",done:true},{reps:10,weight:"22.5",done:true}
+        ]},
+        { name: "Distensioni dietro", sets: [
+          {reps:11,weight:"10",done:true},{reps:12,weight:"10",done:true},
+          {reps:12,weight:"10",done:true},{reps:12,weight:"10",done:true}
+        ]},
+        { name: "Cardio zona 3", sets: [
+          {reps:10,weight:"",done:false,cardioMin:10}
+        ]},
+        { name: "Crunch al cavo alto", sets: [
+          {reps:12,weight:"25",done:true},{reps:12,weight:"27.5",done:true},
+          {reps:12,weight:"30",done:true},{reps:12,weight:"30",done:true}
+        ]}
+      ]
+    }
+  ];
+
+  saveHistory(imported);
+}
+
+preloadHistory();
 updateCDDisplay(cdRemaining,false);
 checkInstallBanner();
 renderDashboard();
