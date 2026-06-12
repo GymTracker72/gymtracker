@@ -8,6 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Gym Tracker">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23007AFF'/><text y='.9em' font-size='70' x='15'>💪</text></svg>">
 <title>Gym Tracker</title>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif; background: #f2f2f7; min-height: 100vh; max-width: 430px; margin: 0 auto; -webkit-font-smoothing: antialiased; }
@@ -148,6 +149,16 @@ button { font-family: inherit; }
 .hist-delete-btn { width: 100%; margin-top: 12px; padding: 13px; background: #fff0f0; color: #ff3b30; border: 1.5px solid #ff3b3030; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; font-family: inherit; }
 .hist-empty { text-align: center; padding: 60px 20px; color: #8e8e93; font-size: 18px; }
 
+/* DRIVE SYNC */
+#drive-bar { display:flex; align-items:center; gap:10px; padding:10px 16px; background:#fff; border-bottom:1px solid #f0f0f0; }
+#drive-status { flex:1; font-size:14px; color:#8e8e93; }
+#drive-btn { background:none; border:1.5px solid #e5e5ea; border-radius:10px; padding:7px 14px; font-size:14px; font-weight:600; cursor:pointer; font-family:inherit; color:#1c1c1e; }
+#drive-btn.connected { border-color:#34C759; color:#34C759; }
+#drive-sync-indicator { width:8px; height:8px; border-radius:50%; background:#e5e5ea; flex-shrink:0; }
+#drive-sync-indicator.syncing { background:#FF9500; animation: blink 1s infinite; }
+#drive-sync-indicator.ok { background:#34C759; }
+#drive-sync-indicator.error { background:#ff3b30; }
+
 /* FLASH */
 @keyframes flashScreen {
   0%,100%{background:#f2f2f7} 25%,75%{background:#FF6B35} 50%{background:#fff}
@@ -182,6 +193,13 @@ button { font-family: inherit; }
   <span style="font-size:22px">📱</span>
   <div class="ib-text">Per avere l'icona: Safari → <b>Condividi</b> (□↑) → <b>Aggiungi alla schermata Home</b></div>
   <button class="ib-close" onclick="dismissInstall()">✕</button>
+</div>
+
+<!-- DRIVE SYNC BAR (visible on dashboard) -->
+<div id="drive-bar" style="display:none">
+  <span id="drive-sync-indicator"></span>
+  <span id="drive-status">Non connesso a Drive</span>
+  <button id="drive-btn" onclick="driveToggle()">Connetti Drive</button>
 </div>
 
 <!-- HISTORY SCREEN -->
@@ -422,9 +440,174 @@ let cdRunning = false;
 let cdInterval = null;
 let cdMuted = false;
 
+// ── GOOGLE DRIVE SYNC ─────────────────────────────────────────────────────
+const DRIVE_CLIENT_ID = "765529798488-h2i0iltct5dgb73vnbffihqf45eagapt.apps.googleusercontent.com";
+const DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.appdata";
+const DRIVE_FILE_NAME = "gymtracker_history.json";
+const SK_DRIVE_TOKEN = "gym_drive_token";
+const SK_DRIVE_FILE_ID = "gym_drive_file_id";
+
+var driveToken = null;
+var driveFileId = null;
+var driveSyncing = false;
+
+function getDriveToken(){ return localStorage.getItem(SK_DRIVE_TOKEN)||null; }
+function setDriveToken(t){ localStorage.setItem(SK_DRIVE_TOKEN,t); driveToken=t; }
+function getDriveFileId(){ return localStorage.getItem(SK_DRIVE_FILE_ID)||null; }
+function setDriveFileId(id){ localStorage.setItem(SK_DRIVE_FILE_ID,id); driveFileId=id; }
+
+function driveToggle(){
+  if(getDriveToken()){
+    // Disconnetti
+    localStorage.removeItem(SK_DRIVE_TOKEN);
+    localStorage.removeItem(SK_DRIVE_FILE_ID);
+    driveToken=null; driveFileId=null;
+    updateDriveUI(false);
+  } else {
+    driveLogin();
+  }
+}
+
+function driveLogin(){
+  var client = google.accounts.oauth2.initTokenClient({
+    client_id: DRIVE_CLIENT_ID,
+    scope: DRIVE_SCOPE,
+    callback: function(resp){
+      if(resp.error){ console.log("Drive auth error",resp); return; }
+      setDriveToken(resp.access_token);
+      updateDriveUI(true);
+      driveLoadHistory();
+    }
+  });
+  client.requestAccessToken();
+}
+
+function updateDriveUI(connected){
+  var bar = document.getElementById("drive-bar");
+  var btn = document.getElementById("drive-btn");
+  var status = document.getElementById("drive-status");
+  var ind = document.getElementById("drive-sync-indicator");
+  if(bar) bar.style.display = "flex";
+  if(connected){
+    if(btn){ btn.textContent="✓ Drive connesso"; btn.classList.add("connected"); }
+    if(status) status.textContent = "Sincronizzato con Google Drive";
+    if(ind) ind.className = "ok";
+  } else {
+    if(btn){ btn.textContent="Connetti Drive"; btn.classList.remove("connected"); }
+    if(status) status.textContent = "Non connesso a Drive";
+    if(ind) ind.className = "";
+  }
+}
+
+function setSyncIndicator(state){ // 'syncing','ok','error'
+  var ind = document.getElementById("drive-sync-indicator");
+  if(ind) ind.className = state;
+  var status = document.getElementById("drive-status");
+  if(status){
+    if(state==="syncing") status.textContent = "Sincronizzazione...";
+    else if(state==="ok") status.textContent = "Sincronizzato · "+new Date().toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"});
+    else if(state==="error") status.textContent = "Errore sincronizzazione";
+  }
+}
+
+async function driveLoadHistory(){
+  var token = getDriveToken();
+  if(!token) return;
+  try{
+    setSyncIndicator("syncing");
+    // Cerca file esistente
+    var fileId = getDriveFileId();
+    if(!fileId){
+      var search = await fetch(
+        "https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name%3D%27"+DRIVE_FILE_NAME+"%27&fields=files(id)",
+        {headers:{"Authorization":"Bearer "+token}}
+      );
+      var sdata = await search.json();
+      if(sdata.files && sdata.files.length > 0){
+        fileId = sdata.files[0].id;
+        setDriveFileId(fileId);
+      }
+    }
+    if(fileId){
+      var res = await fetch(
+        "https://www.googleapis.com/drive/v3/files/"+fileId+"?alt=media",
+        {headers:{"Authorization":"Bearer "+token}}
+      );
+      var driveData = await res.json();
+      if(Array.isArray(driveData) && driveData.length > 0){
+        // Unisci con localStorage, Drive ha la precedenza
+        var local = JSON.parse(localStorage.getItem(SK_HISTORY)||"[]");
+        var merged = mergeSessions(driveData, local);
+        localStorage.setItem(SK_HISTORY, JSON.stringify(merged));
+        renderDashboard();
+      }
+    }
+    setSyncIndicator("ok");
+  }catch(e){
+    console.log("Drive load error",e);
+    setSyncIndicator("error");
+  }
+}
+
+async function driveSaveHistory(h){
+  var token = getDriveToken();
+  if(!token) return;
+  if(driveSyncing) return;
+  driveSyncing = true;
+  try{
+    setSyncIndicator("syncing");
+    var json = JSON.stringify(h);
+    var fileId = getDriveFileId();
+    var url, method;
+    if(fileId){
+      url = "https://www.googleapis.com/upload/drive/v3/files/"+fileId+"?uploadType=media";
+      method = "PATCH";
+    } else {
+      // Crea nuovo file in appDataFolder
+      var meta = await fetch("https://www.googleapis.com/drive/v3/files",{
+        method:"POST",
+        headers:{"Authorization":"Bearer "+token,"Content-Type":"application/json"},
+        body: JSON.stringify({name:DRIVE_FILE_NAME, parents:["appDataFolder"]})
+      });
+      var mdata = await meta.json();
+      fileId = mdata.id;
+      setDriveFileId(fileId);
+      url = "https://www.googleapis.com/upload/drive/v3/files/"+fileId+"?uploadType=media";
+      method = "PATCH";
+    }
+    await fetch(url,{
+      method:method,
+      headers:{"Authorization":"Bearer "+token,"Content-Type":"application/json"},
+      body: json
+    });
+    setSyncIndicator("ok");
+  }catch(e){
+    console.log("Drive save error",e);
+    setSyncIndicator("error");
+  }
+  driveSyncing = false;
+}
+
+function mergeSessions(a, b){
+  var map = {};
+  a.concat(b).forEach(function(s){
+    var key = s.date+"_"+s.workout;
+    if(!map[key]) map[key]=s;
+  });
+  var merged = Object.values(map);
+  merged.sort(function(x,y){ return new Date(x.date)-new Date(y.date); });
+  return merged;
+}
+
 // ── STORAGE ────────────────────────────────────────────────────────────────
 function loadHistory(){ try{return JSON.parse(localStorage.getItem(SK_HISTORY)||"[]")}catch{return[]} }
-function saveHistory(h){ try{localStorage.setItem(SK_HISTORY,JSON.stringify(h))}catch{} }
+function saveHistory(h){
+  try{
+    localStorage.setItem(SK_HISTORY,JSON.stringify(h));
+    // Salva su Drive se connesso
+    if(getDriveToken()) driveSaveHistory(h);
+  }catch{}
+}
 function saveActive(){
   if(!currentWorkout||!sessionStart) return;
   try{ localStorage.setItem(SK_SESSION,JSON.stringify({
@@ -471,6 +654,10 @@ function dismissInstall(){
 // ── DASHBOARD ──────────────────────────────────────────────────────────────
 function renderDashboard(){
   document.getElementById("today-date").textContent=fmtDate(new Date());
+  // Mostra barra Drive
+  var bar=document.getElementById("drive-bar");
+  if(bar) bar.style.display="flex";
+  if(getDriveToken()) updateDriveUI(true); else updateDriveUI(false);
   var grid=document.getElementById("workout-grid");
   grid.innerHTML="";
   var history=loadHistory();
@@ -786,7 +973,9 @@ function addExercise(ex){
 // ── COUNTDOWN ─────────────────────────────────────────────────────────────
 function setCD(sec){ stopCD(); cdSeconds=sec; cdRemaining=sec; injectPull11Jun();
 injectPush09Jun();
-updateCDDisplay(cdRemaining,false); }
+updateCDDisplay(cdRemaining,false);
+// Inizializza Drive se già connesso
+if(getDriveToken()){ updateDriveUI(true); driveLoadHistory(); } }
 
 function startCD(){
   if(cdRemaining<=0) cdRemaining=cdSeconds;
@@ -1619,12 +1808,17 @@ function doImport(){
 // ── INSERISCI SESSIONE PULL 11/06/2026 ────────────────────────────────────
 function injectPull11Jun(){
   var h = loadHistory();
-  // Controlla se già presente
+  // Rimuovi eventuale versione precedente inserita da codice
+  h = h.filter(function(s){
+    return !(s.date && s.date.indexOf("2026-06-11") === 0 && s.workout === "Pull" && s._injected);
+  });
+  // Controlla se già presente come sessione utente reale
   var already = h.some(function(s){
-    return s.date && s.date.indexOf("2026-06-11") === 0 && s.workout === "Pull";
+    return s.date && s.date.indexOf("2026-06-11") === 0 && s.workout === "Pull" && !s._injected;
   });
   if(already) return;
   var session = {
+    _injected: true,
     workout: "Pull",
     date: "2026-06-11T17:04:00.000Z",
     startTime: "19:04",
@@ -1671,11 +1865,17 @@ function injectPull11Jun(){
 // ── INSERISCI SESSIONE PUSH 09/06/2026 ────────────────────────────────────
 function injectPush09Jun(){
   var h = loadHistory();
+  // Rimuovi eventuale versione precedente inserita da codice
+  h = h.filter(function(s){
+    return !(s.date && s.date.indexOf("2026-06-09") === 0 && s.workout === "Push" && s._injected);
+  });
+  // Controlla se già presente come sessione utente reale
   var already = h.some(function(s){
-    return s.date && s.date.indexOf("2026-06-09") === 0 && s.workout === "Push";
+    return s.date && s.date.indexOf("2026-06-09") === 0 && s.workout === "Push" && !s._injected;
   });
   if(already) return;
   var session = {
+    _injected: true,
     workout: "Push",
     date: "2026-06-09T19:12:00.000Z",
     startTime: "21:12",
