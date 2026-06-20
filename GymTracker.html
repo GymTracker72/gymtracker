@@ -24,6 +24,10 @@ button { font-family: inherit; }
 #dash-header h1 { font-size: 36px; font-weight: 700; color: #1c1c1e; letter-spacing: -.5px; }
 .section-label { font-size: 16px; color: #8e8e93; font-weight: 600; text-transform: uppercase; letter-spacing: .3px; padding: 22px 20px 12px; }
 #workout-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 0 16px; }
+.wcard-wrap { position: relative; }
+.wcard-move-col { position: absolute; top: 8px; right: 8px; display: flex; gap: 4px; z-index: 2; }
+.wcard-move-btn { background: rgba(255,255,255,.9); border: none; border-radius: 8px; width: 26px; height: 24px; font-size: 12px; color: #8e8e93; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; box-shadow: 0 1px 3px rgba(0,0,0,.15); }
+.wcard-move-btn:disabled { opacity: .25; }
 .workout-card { background: #fff; border: none; border-radius: 22px; padding: 22px 18px; cursor: pointer; text-align: left; box-shadow: 0 2px 10px rgba(0,0,0,.09); position: relative; overflow: hidden; transition: transform .12s; width: 100%; }
 .workout-card:active { transform: scale(.96); }
 .workout-card .blob { position: absolute; top: -12px; right: -12px; width: 70px; height: 70px; border-radius: 50%; opacity: .15; }
@@ -185,6 +189,10 @@ button { font-family: inherit; }
 .prog-session-date { font-size: 15px; font-weight: 600; color: #1c1c1e; }
 .prog-session-sets { font-size: 14px; color: #8e8e93; margin-top: 4px; }
 .ex-prog-btn { background: none; border: none; font-size: 20px; cursor: pointer; padding: 4px 6px; flex-shrink: 0; }
+.ex-move-col { display: flex; flex-direction: column; gap: 2px; flex-shrink: 0; }
+.ex-move-btn { background: #f2f2f7; border: none; border-radius: 8px; width: 30px; height: 26px; font-size: 14px; color: #8e8e93; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; }
+.ex-move-btn:disabled { opacity: .3; }
+.ex-move-btn:active:not(:disabled) { background: #e5e5ea; }
 </style>
 </head>
 <body>
@@ -381,7 +389,7 @@ const ALL_EXERCISES = [
   "Croci con manubri","Croci ai cavi bassi","Push-up","Dips alle parallele",
   // ── SPALLE (libero) ──
   "Lento avanti con bilanciere","Lento avanti con manubri","Arnold press",
-  "Alzate laterali con manubri","Alzate laterali con manubri su panca piana",
+  "Alzate laterali con manubri su panca piana",
   "Alzate laterali con manubri su panca","Lateral raise al cavo",
   "Alzate frontali con manubri","Alzate frontali con bilanciere",
   "Facepull al cavo","Scrollate con manubri","Scrollate con bilanciere",
@@ -652,6 +660,45 @@ function dismissInstall(){
 }
 
 // ── DASHBOARD ──────────────────────────────────────────────────────────────
+const SK_WORKOUT_ORDER = "gym_workout_order";
+
+function getWorkoutOrder(history){
+  // Se c\'è un override manuale salvato, usalo come base
+  var manual = null;
+  try{ manual = JSON.parse(localStorage.getItem(SK_WORKOUT_ORDER)||"null"); }catch(e){}
+
+  var names = Object.keys(BASE_WORKOUTS);
+
+  if(manual && manual.length === names.length && names.every(function(n){return manual.indexOf(n)>=0;})){
+    return manual;
+  }
+
+  // Altrimenti ordina automaticamente: chi manca da più tempo va primo
+  var withLast = names.map(function(name){
+    var last = history.filter(function(h){return h.workout===name;}).slice(-1)[0];
+    return { name:name, lastTime: last ? new Date(last.date).getTime() : 0 };
+  });
+  withLast.sort(function(a,b){ return a.lastTime - b.lastTime; }); // più vecchio (o mai fatto) prima
+  return withLast.map(function(w){ return w.name; });
+}
+
+function saveWorkoutOrder(order){
+  try{ localStorage.setItem(SK_WORKOUT_ORDER, JSON.stringify(order)); }catch(e){}
+}
+
+function moveWorkoutCard(name, direction){
+  var history = loadHistory();
+  var order = getWorkoutOrder(history);
+  var idx = order.indexOf(name);
+  var newIdx = idx + direction;
+  if(newIdx < 0 || newIdx >= order.length) return;
+  var tmp = order[idx];
+  order[idx] = order[newIdx];
+  order[newIdx] = tmp;
+  saveWorkoutOrder(order);
+  renderDashboard();
+}
+
 function renderDashboard(){
   document.getElementById("today-date").textContent=fmtDate(new Date());
   // Mostra barra Drive
@@ -661,18 +708,39 @@ function renderDashboard(){
   var grid=document.getElementById("workout-grid");
   grid.innerHTML="";
   var history=loadHistory();
-  Object.keys(BASE_WORKOUTS).forEach(function(name){
+  var order = getWorkoutOrder(history);
+
+  order.forEach(function(name, idx){
     var data=BASE_WORKOUTS[name];
     var last=history.filter(function(h){return h.workout===name;}).slice(-1)[0];
+
+    var wrap=document.createElement("div");
+    wrap.className="wcard-wrap";
+
     var card=document.createElement("button");
     card.className="workout-card";
+    card.style.width="100%";
     card.innerHTML='<div class="blob" style="background:'+data.color+'"></div>'+
       '<div class="wicon" style="color:'+data.color+'">'+data.icon+'</div>'+
       '<div class="wname">'+name+'</div>'+
       '<div class="wcount">'+data.exercises.length+' esercizi</div>'+
-      (last?'<div class="wlast" style="color:'+data.color+'">Ultima: '+fmtDateShort(last.date)+'</div>':"");
+      (last?'<div class="wlast" style="color:'+data.color+'">Ultima: '+fmtDateShort(last.date)+'</div>':'<div class="wlast" style="color:#8e8e93">Mai fatta</div>');
     card.onclick=function(){startSession(name);};
-    grid.appendChild(card);
+
+    var moveCol=document.createElement("div");
+    moveCol.className="wcard-move-col";
+    var leftBtn=document.createElement("button");
+    leftBtn.className="wcard-move-btn"; leftBtn.textContent="◀";
+    leftBtn.disabled=(idx===0);
+    (function(n){leftBtn.onclick=function(e){e.stopPropagation();moveWorkoutCard(n,-1);};})(name);
+    var rightBtn=document.createElement("button");
+    rightBtn.className="wcard-move-btn"; rightBtn.textContent="▶";
+    rightBtn.disabled=(idx===order.length-1);
+    (function(n){rightBtn.onclick=function(e){e.stopPropagation();moveWorkoutCard(n,1);};})(name);
+    moveCol.appendChild(leftBtn); moveCol.appendChild(rightBtn);
+
+    wrap.appendChild(card); wrap.appendChild(moveCol);
+    grid.appendChild(wrap);
   });
   var active=loadActive();
   var banner=document.getElementById("active-banner");
@@ -798,7 +866,21 @@ function buildExCard(ex,ei){
   var progBtn=document.createElement("button");
   progBtn.className="ex-prog-btn"; progBtn.textContent="📈"; progBtn.title="Progressioni";
   (function(n){progBtn.onclick=function(e){e.stopPropagation();openProg(n);};})(ex);
-  header.appendChild(dot); header.appendChild(info); header.appendChild(chev); header.appendChild(progBtn); header.appendChild(delBtn);
+
+  // Frecce sposta su/giù
+  var moveCol=document.createElement("div");
+  moveCol.className="ex-move-col";
+  var upBtn=document.createElement("button");
+  upBtn.className="ex-move-btn"; upBtn.textContent="▲"; upBtn.title="Sposta su";
+  upBtn.disabled = (ei===0);
+  (function(i){upBtn.onclick=function(e){e.stopPropagation();moveExercise(i,-1);};})(ei);
+  var downBtn=document.createElement("button");
+  downBtn.className="ex-move-btn"; downBtn.textContent="▼"; downBtn.title="Sposta giù";
+  downBtn.disabled = (ei===sessionExercises.length-1);
+  (function(i){downBtn.onclick=function(e){e.stopPropagation();moveExercise(i,1);};})(ei);
+  moveCol.appendChild(upBtn); moveCol.appendChild(downBtn);
+
+  header.appendChild(dot); header.appendChild(info); header.appendChild(moveCol); header.appendChild(chev); header.appendChild(progBtn); header.appendChild(delBtn);
 
   // Body
   var body=document.createElement("div");
@@ -916,6 +998,24 @@ function toggleDone(ei,si){
 }
 
 // ── ELIMINA ESERCIZIO ──────────────────────────────────────────────────────
+function moveExercise(ei, direction){
+  var newIdx = ei + direction;
+  if(newIdx < 0 || newIdx >= sessionExercises.length) return;
+
+  // Scambia esercizi nell'array
+  var tmpEx = sessionExercises[ei];
+  sessionExercises[ei] = sessionExercises[newIdx];
+  sessionExercises[newIdx] = tmpEx;
+
+  // Scambia anche i set corrispondenti
+  var tmpSets = setsState[ei];
+  setsState[ei] = setsState[newIdx];
+  setsState[newIdx] = tmpSets;
+
+  renderExercises();
+  saveActive();
+}
+
 function askDeleteEx(ei,name){
   showModal("Rimuovere \""+name+"\"?","L'esercizio verrà rimosso da questa sessione.",
     "#ff3b30","Sì, rimuovi",function(){
@@ -970,36 +1070,63 @@ function addExercise(ex){
   setTimeout(function(){newCard.scrollIntoView({behavior:"smooth",block:"center"});},200);
 }
 
-// ── COUNTDOWN ─────────────────────────────────────────────────────────────
-function setCD(sec){ stopCD(); cdSeconds=sec; cdRemaining=sec; injectPull11Jun();
-injectPush09Jun();
-updateCDDisplay(cdRemaining,false);
-// Inizializza Drive se già connesso
-if(getDriveToken()){ updateDriveUI(true); driveLoadHistory(); } }
+// ── COUNTDOWN (basato su orario reale, resiste al background) ──────────────
+var cdEndTimestamp = null; // timestamp ms di quando il countdown finisce
+
+function setCD(sec){
+  stopCD();
+  cdSeconds = sec;
+  cdRemaining = sec;
+  updateCDDisplay(cdRemaining, false);
+}
 
 function startCD(){
-  if(cdRemaining<=0) cdRemaining=cdSeconds;
-  cdRunning=true;
-  document.getElementById("cd-startstop").textContent="⏸ Pausa";
-  document.getElementById("cd-startstop").style.background="#ff9500";
-  cdInterval=setInterval(function(){
-    cdRemaining--;
-    updateCDDisplay(cdRemaining,cdRemaining<=5);
-    if(cdRemaining<=0){ stopCD(); if(!cdMuted) playBeep(); }
-  },1000);
+  if(cdRemaining <= 0) cdRemaining = cdSeconds;
+  cdEndTimestamp = Date.now() + cdRemaining*1000;
+  cdRunning = true;
+  document.getElementById("cd-startstop").textContent = "⏸ Pausa";
+  document.getElementById("cd-startstop").style.background = "#ff9500";
+  clearInterval(cdInterval);
+  cdInterval = setInterval(tickCD, 250); // tick più frequente per precisione
 }
+
+function tickCD(){
+  if(!cdRunning || !cdEndTimestamp) return;
+  var remainingMs = cdEndTimestamp - Date.now();
+  var remainingSec = Math.ceil(remainingMs / 1000);
+  if(remainingSec !== cdRemaining){
+    cdRemaining = Math.max(0, remainingSec);
+    updateCDDisplay(cdRemaining, cdRemaining <= 5);
+  }
+  if(remainingMs <= 0){
+    stopCD();
+    if(!cdMuted) playBeep();
+  }
+}
+
 function stopCD(){
-  cdRunning=false; clearInterval(cdInterval);
-  var color=currentWorkout?BASE_WORKOUTS[currentWorkout].color:"#34C759";
-  document.getElementById("cd-startstop").textContent="▶ Avvia";
-  document.getElementById("cd-startstop").style.background=color;
-  if(cdRemaining<=0){ cdRemaining=cdSeconds; updateCDDisplay(cdRemaining,false); }
+  cdRunning = false;
+  clearInterval(cdInterval);
+  cdEndTimestamp = null;
+  var color = currentWorkout ? BASE_WORKOUTS[currentWorkout].color : "#34C759";
+  document.getElementById("cd-startstop").textContent = "▶ Avvia";
+  document.getElementById("cd-startstop").style.background = color;
+  if(cdRemaining <= 0){ cdRemaining = cdSeconds; updateCDDisplay(cdRemaining, false); }
 }
-function updateCDDisplay(sec,urgent){
-  var el=document.getElementById("countdown-display");
-  el.textContent=fmtCD(sec);
-  el.style.color=urgent?"#ff3b30":sec===cdSeconds?"#1c1c1e":"#007AFF";
+
+function updateCDDisplay(sec, urgent){
+  var el = document.getElementById("countdown-display");
+  el.textContent = fmtCD(sec);
+  el.style.color = urgent ? "#ff3b30" : sec === cdSeconds ? "#1c1c1e" : "#007AFF";
 }
+
+// Quando l'app torna in primo piano, ricalcola subito il countdown
+// e controlla se il tempo è scaduto mentre eri fuori
+document.addEventListener("visibilitychange", function(){
+  if(document.visibilityState === "visible" && cdRunning && cdEndTimestamp){
+    tickCD();
+  }
+});
 function toggleMute(){
   cdMuted=!cdMuted;
   document.getElementById("cd-mute").textContent=cdMuted?"🔕":"🔔";
@@ -1121,6 +1248,7 @@ function endSession(){
     duration:endTime-sessionStart, exercises:exercises
   };
   var h=loadHistory(); h.push(session); saveHistory(h);
+  try{ localStorage.removeItem(SK_WORKOUT_ORDER); }catch(e){} // torna all'ordinamento automatico
   renderSummary(session); closeModal(); showScreen("summary");
 }
 function goHome(){ clearInterval(timerInterval); stopCD(); renderDashboard(); showScreen("dashboard"); }
@@ -1911,6 +2039,69 @@ function injectPush09Jun(){
         {reps:16, weight:"15", done:true},
         {reps:12, weight:"15", done:true},
         {reps:9,  weight:"15", done:true}
+      ]}
+    ]
+  };
+  h.push(session);
+  h.sort(function(a,b){ return new Date(a.date)-new Date(b.date); });
+  saveHistory(h);
+}
+
+// ── INSERISCI SESSIONE UPPER 08/06/2026 ───────────────────────────────────
+function injectUpper08Jun(){
+  var h = loadHistory();
+  var already = h.some(function(s){
+    return s.date && s.date.indexOf("2026-06-08") === 0 && s.workout === "Upper";
+  });
+  if(already) return;
+  var session = {
+    _injected: true,
+    workout: "Upper",
+    date: "2026-06-08T16:25:00.000Z",
+    startTime: "18:25",
+    endTime: "20:30",
+    duration: 7500000,
+    exercises: [
+      { name: "Panca inclinata con bilanciere", sets: [
+        {reps:8,  weight:"30", done:true},
+        {reps:10, weight:"30", done:true}
+      ]},
+      { name: "Pectoral machine", sets: [
+        {reps:11, weight:"30", done:true},
+        {reps:7,  weight:"30", done:true}
+      ]},
+      { name: "Rematore con manubri panca 30°", sets: [
+        {reps:7,  weight:"52.5", done:true},
+        {reps:8,  weight:"52.5", done:true},
+        {reps:7,  weight:"52.5", done:true},
+        {reps:7,  weight:"52.5", done:true}
+      ]},
+      { name: "Lat machine presa prona (stretta)", sets: [
+        {reps:12, weight:"55", done:true},
+        {reps:7,  weight:"60", done:true},
+        {reps:7,  weight:"60", done:true},
+        {reps:7,  weight:"60", done:true}
+      ]},
+      { name: "Alzate laterali con manubri su panca", sets: [
+        {reps:11, weight:"10", done:true},
+        {reps:14, weight:"10", done:true},
+        {reps:12, weight:"10", done:true},
+        {reps:12, weight:"10", done:true}
+      ]},
+      { name: "Curl panca Scott bilanciere EZ", sets: [
+        {reps:11, weight:"17.5", done:true},
+        {reps:12, weight:"15",   done:true},
+        {reps:11, weight:"15",   done:true},
+        {reps:11, weight:"15",   done:true}
+      ]},
+      { name: "Push down con barre", sets: [
+        {reps:11, weight:"17.5", done:true},
+        {reps:12, weight:"15",   done:true},
+        {reps:11, weight:"15",   done:true},
+        {reps:11, weight:"15",   done:true}
+      ]},
+      { name: "Cardio zona 3", sets: [
+        {reps:10, weight:"", done:false, cardioMin:10}
       ]}
     ]
   };
