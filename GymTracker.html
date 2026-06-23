@@ -538,6 +538,7 @@ function renderEditWorkoutScreen(name, data){
     btn.onclick = function(){
       document.querySelectorAll("[data-color]").forEach(function(b){ b.style.border="3px solid transparent"; });
       this.style.border = "3px solid #1c1c1e";
+      this.style.outline = "none";
     };
     colorRow.appendChild(btn);
   });
@@ -561,6 +562,7 @@ function renderEditWorkoutScreen(name, data){
     btn.onclick = function(){
       document.querySelectorAll("[data-icon]").forEach(function(b){ b.style.border="2px solid #e5e5ea"; b.style.background="#fff"; });
       this.style.border = "2px solid #1c1c1e"; this.style.background="#f2f2f7";
+      this.style.outline = "none";
     };
     iconRow.appendChild(btn);
   });
@@ -686,10 +688,15 @@ function saveEditWorkout(){
   var newName = nameInp ? nameInp.value.trim() : "";
   if(!newName){ alert("Inserisci un nome per la scheda."); return; }
 
-  var selectedColorBtn = document.querySelector("[data-color][style*='solid #1c1c1e']");
-  var newColor = selectedColorBtn ? selectedColorBtn.dataset.color : AVAILABLE_COLORS[0];
-  var selectedIconBtn = document.querySelector("[data-icon][style*='solid #1c1c1e']");
-  var newIcon = selectedIconBtn ? selectedIconBtn.dataset.icon : AVAILABLE_ICONS[0];
+  // Trova colore selezionato (border bold = selezionato)
+  var newColor = AVAILABLE_COLORS[0];
+  document.querySelectorAll("[data-color]").forEach(function(b){
+    if(b.style.border && b.style.border.indexOf("3px solid #1c1c1e")>=0) newColor=b.dataset.color;
+  });
+  var newIcon = AVAILABLE_ICONS[0];
+  document.querySelectorAll("[data-icon]").forEach(function(b){
+    if(b.style.border && b.style.border.indexOf("2px solid #1c1c1e")>=0) newIcon=b.dataset.icon;
+  });
 
   var w = loadWorkouts();
   var isNew = !editingWorkoutName;
@@ -1091,7 +1098,10 @@ function renderDashboard(){
   var currentWorkouts = loadWorkouts();
   order.forEach(function(name, idx){
     var data=currentWorkouts[name];
-    if(!data) return;
+    if(!data || typeof data !== 'object') return;
+    if(!data.color) data.color = "#8e8e93";
+    if(!data.icon) data.icon = "●";
+    if(!data.exercises) data.exercises = [];
     var last=history.filter(function(h){return h.workout===name;}).slice(-1)[0];
 
     var wrap=document.createElement("div");
