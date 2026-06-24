@@ -1347,7 +1347,7 @@ function buildExCard(ex,ei){
   var sets=setsState[ei]||initSets(ex);
   var doneSets=sets.filter(function(s){return s.done;}).length;
   var allDone=doneSets===sets.length;
-  var color=BASE_WORKOUTS[currentWorkout].color;
+  var color=(loadWorkouts()[currentWorkout]||BASE_WORKOUTS[currentWorkout]||{color:'#34C759'}).color;
   var dotColor=allDone?color:doneSets>0?color+"80":"#d1d1d6";
 
   var card=document.createElement("div");
@@ -1675,7 +1675,7 @@ function stopCD(){
   cdRunning = false;
   clearInterval(cdInterval);
   cdEndTimestamp = null;
-  var color = currentWorkout ? BASE_WORKOUTS[currentWorkout].color : "#34C759";
+  var color = currentWorkout ? (loadWorkouts()[currentWorkout]||BASE_WORKOUTS[currentWorkout]||{color:'#34C759'}).color : "#34C759";
   document.getElementById("cd-startstop").textContent = "▶ Avvia";
   document.getElementById("cd-startstop").style.background = color;
   if(cdRemaining <= 0){ cdRemaining = cdSeconds; updateCDDisplay(cdRemaining, false); }
@@ -1794,7 +1794,7 @@ function toggleCD(){
 function askEnd(){
   var elapsed=Date.now()-sessionStart.getTime();
   showModal("Termina allenamento?","Durata: "+fmtDur(elapsed)+". I dati verranno salvati.",
-    BASE_WORKOUTS[currentWorkout].color,"Sì, termina",endSession);
+    (loadWorkouts()[currentWorkout]||BASE_WORKOUTS[currentWorkout]||{color:'#007AFF'}).color,"Sì, termina",endSession);
 }
 function askBack(){
   showModal("Tornare alla home?","La sessione rimane attiva, potrai riprenderla.",
@@ -2320,7 +2320,7 @@ function renderProg(exName){
     var chartTitle = document.createElement("div"); chartTitle.className = "prog-chart-title";
     chartTitle.textContent = "Peso massimo per sessione";
     chartCard.appendChild(chartTitle);
-    chartCard.appendChild(buildChart(withWeight, currentWorkout ? BASE_WORKOUTS[currentWorkout].color : "#007AFF"));
+    chartCard.appendChild(buildChart(withWeight, currentWorkout ? (loadWorkouts()[currentWorkout]||BASE_WORKOUTS[currentWorkout]||{color:'#007AFF'}).color : "#007AFF"));
     body.appendChild(chartCard);
   }
 
