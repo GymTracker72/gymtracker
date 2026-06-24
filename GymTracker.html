@@ -395,118 +395,234 @@ const BASE_WORKOUTS = {
   ]}
 };
 
-const ALL_EXERCISES = [
-  // ── TECHNOGYM ISOTONICO ── PETTO ──
-  "Technogym Chest Press","Technogym Chest Press inclinata","Technogym Chest Press declinata",
-  "Technogym Pectoral","Technogym Pec Deck","Technogym Cable Crossover","Technogym Croci ai cavi",
-  "Technogym Butterfly","Technogym Multipower Panca piana","Technogym Multipower Panca inclinata",
-  // ── TECHNOGYM ISOTONICO ── SPALLE ──
-  "Technogym Shoulder Press","Technogym Alzate laterali al cavo",
-  "Technogym Alzate laterali machine","Technogym Alzate frontali machine",
-  "Technogym Upright Row","Technogym Facepull","Technogym Rear Delt machine",
-  // ── TECHNOGYM ISOTONICO ── TRICIPITI ──
-  "Technogym Arm Extension (tricipiti)","Technogym Triceps Press machine",
-  "Technogym Push down con corda","Technogym Push down con barra",
-  "Technogym Dips machine","Technogym Overhead Triceps Extension machine",
-  // ── TECHNOGYM ISOTONICO ── SCHIENA ──
-  "Technogym Lat Machine presa prona","Technogym Lat Machine presa stretta",
-  "Technogym Lat Machine presa supina","Technogym Low Row",
-  "Technogym Seated Row","Technogym Vertical Traction",
-  "Technogym Lower Back","Technogym Back Extension",
-  "Technogym Chin-up / Dip","Technogym Pull-up assistito",
-  "Technogym Rowing machine","Technogym High Row","Technogym Reverse Fly machine",
-  // ── TECHNOGYM ISOTONICO ── BICIPITI ──
-  "Technogym Arm Curl (bicipiti)","Technogym Preacher Curl machine",
-  "Technogym Curl ai cavi","Technogym Biceps Curl machine",
-  "Technogym Hammer Curl machine",
-  // ── TECHNOGYM ISOTONICO ── GAMBE ──
-  "Technogym Leg Press","Technogym Leg Press 45°","Technogym Leg Extension",
-  "Technogym Leg Curl da seduto","Technogym Leg Curl sdraiato","Technogym Leg Curl in piedi",
-  "Technogym Adductor","Technogym Abductor","Technogym Hip Abductor",
-  "Technogym Glute machine","Technogym Hip Thrust machine",
-  "Technogym Calf raise","Technogym Seated Calf raise",
-  "Technogym Squat machine","Technogym Smith Machine (Multipower)",
-  "Technogym Hack Squat","Technogym Romanian Deadlift machine",
-  // ── TECHNOGYM ISOTONICO ── CORE ──
-  "Technogym Abdominal Crunch machine","Technogym Rotary Torso",
-  "Technogym Core trainer","Technogym Back Extension machine",
-  "Technogym Croci ai cavi dall'alto","Technogym Oblique machine",
-  // ── TECHNOGYM CARDIO (EXCITE) ──
-  "Technogym Tapis roulant Excite Run","Technogym Cyclette Excite Bike",
-  "Technogym Bike Recumbent","Technogym Ellittica Excite Cross",
-  "Technogym Vogatore Excite Row","Technogym Ski Erg",
-  "Technogym StairClimber","Technogym Synchro (ellittica verticale)",
-  "Technogym Bike SKILLBIKE","Technogym Run Artis","Technogym Climb",
-  // ── PETTO (libero) ──
-  "Panca piana con bilanciere","Panca piana con manubri",
-  "Panca inclinata con bilanciere","Panca inclinata con manubri",
-  "Panca declinata con bilanciere","Panca declinata con manubri",
-  "Chest Press inclinata","Spinte con manubri panca piana",
-  "Spinte con manubri panca inclinata","Pectoral machine",
-  "Pec deck","Cable crossover","Croci con manubri",
-  "Croci ai cavi bassi","Croci ai cavi alti","Push-up","Push-up inclinato",
-  "Dips alle parallele","Dips ai cavi",
-  // ── SPALLE (libero) ──
-  "Lento avanti con bilanciere","Lento avanti con manubri",
-  "Lento dietro con bilanciere","Arnold press",
-  "Alzate laterali con manubri su panca piana",
-  "Alzate laterali con manubri su panca",
-  "Alzate laterali con manubri","Lateral raise al cavo",
-  "Alzate frontali con manubri","Alzate frontali con bilanciere",
-  "Alzate frontali al cavo","Facepull al cavo",
-  "Scrollate con manubri","Scrollate con bilanciere",
-  "Upright row con bilanciere","Upright row con manubri",
-  "Upright row al cavo","Rear delt fly con manubri",
-  "Rear delt fly ai cavi","Rear delt machine",
-  // ── TRICIPITI (libero) ──
-  "Push down con barra","Push down con corda",
-  "Push down al cavo presa prona","Push down al cavo presa supina",
-  "Distensioni dietro","Tricep overhead extension",
-  "Skull crushers","JM press",
-  "Kickback con manubrio","Kickback al cavo",
-  "Close grip bench press","French press",
-  // ── SCHIENA (libero) ──
-  "Lat machine presa prona","Lat machine presa prona (stretta)",
-  "Lat machine presa supina","Lat machine presa neutra",
-  "Pull-up","Chin-up","Pull-up con zavorra",
-  "Seated Row","Seated Row presa stretta","Seated Row presa larga",
-  "Rematore con manubri panca 30°","Rematore con bilanciere",
-  "Rematore con manubrio singolo","Rematore al cavo basso",
-  "T-bar row","Cable row","Facepull","Pullover con manubrio",
-  "Pullover al cavo","Shrug con manubri","Shrug con bilanciere",
-  "Stacco da terra con bilanciere","Romanian deadlift",
-  "Iperextension","Back extension su panca",
-  // ── BICIPITI (libero) ──
-  "Curl bilanciere","Curl bilanciere EZ",
-  "Curl panca Scott con manubrio singolo","Curl panca Scott bilanciere EZ",
-  "Hammer curl","Hammer curl al cavo",
-  "Concentration curl","Incline dumbbell curl",
-  "Curl ai cavi","Preacher curl","Zottman curl",
-  "Reverse curl","Curl su panca inclinata",
-  // ── GAMBE (libero) ──
-  "Squat con bilanciere","Squat frontale con bilanciere",
-  "Squat con manubri","Goblet squat","Leg press a 45°",
-  "Hack squat","Stacco e gambe tese con bilanciere",
-  "Stacco sumo","Sumo squat","Bulgarian split squat",
-  "Affondi con manubri","Affondi con bilanciere",
-  "Affondi cammino","Step-up con manubri",
-  "Leg Extension","Leg Curl da seduto","Leg Curl sdraiato",
-  "Hip thrust","Hip thrust con bilanciere","Glute bridge",
-  "Adductor","Abduttore","Abductor machine",
-  "Polpacci con ginocchio esteso","Calf raise in piedi",
-  "Calf raise seduto","Leg press calf raise","Donkey calf raise",
-  // ── CORE (libero) ──
-  "Crunch","Crunch al cavo alto","Crunch inverso","Crunch obliquo",
-  "Plank","Plank laterale","Plank con elevazione gamba",
-  "Russian twist","Leg raise","Hanging leg raise",
-  "Hanging knee raise","Ab wheel","Mountain climber",
-  "Hollow body hold","Dead bug","Bird dog","Cable crunch",
-  "Pallof press","Rotary torso","Woodchop al cavo alto","Woodchop al cavo basso",
-  // ── CARDIO ──
-  "Cardio zona 3","Tapis roulant","Cyclette","Ellittica",
-  "Vogatore","Jumping rope","HIIT","Nuoto","StairClimber",
-  "Corsa outdoor","Camminata veloce","Corsa in salita"
-].filter(function(v,i,a){ return a.indexOf(v)===i; }); // rimuove duplicati
+const EXERCISE_DB = [
+  {name:"Panca piana con bilanciere",primary:"Petto",secondary:["Tricipiti", "Deltoide anteriore"]},
+  {name:"Panca piana con manubri",primary:"Petto",secondary:["Tricipiti", "Deltoide anteriore"]},
+  {name:"Panca inclinata con bilanciere",primary:"Petto",secondary:["Deltoide anteriore", "Tricipiti"]},
+  {name:"Panca inclinata con manubri",primary:"Petto",secondary:["Deltoide anteriore", "Tricipiti"]},
+  {name:"Panca declinata con bilanciere",primary:"Petto",secondary:["Tricipiti", "Deltoide anteriore"]},
+  {name:"Panca declinata con manubri",primary:"Petto",secondary:["Tricipiti"]},
+  {name:"Chest Press inclinata",primary:"Petto",secondary:["Deltoide anteriore", "Tricipiti"]},
+  {name:"Spinte con manubri panca piana",primary:"Petto",secondary:["Tricipiti", "Deltoide anteriore"]},
+  {name:"Spinte con manubri panca inclinata",primary:"Petto",secondary:["Deltoide anteriore", "Tricipiti"]},
+  {name:"Pectoral machine",primary:"Petto",secondary:["Deltoide anteriore"]},
+  {name:"Pec deck",primary:"Petto",secondary:["Deltoide anteriore"]},
+  {name:"Cable crossover",primary:"Petto",secondary:["Deltoide anteriore", "Bicipiti"]},
+  {name:"Croci con manubri",primary:"Petto",secondary:["Deltoide anteriore", "Bicipiti"]},
+  {name:"Croci ai cavi bassi",primary:"Petto",secondary:["Deltoide anteriore"]},
+  {name:"Croci ai cavi alti",primary:"Petto",secondary:["Deltoide anteriore"]},
+  {name:"Push-up",primary:"Petto",secondary:["Tricipiti", "Deltoide anteriore", "Core"]},
+  {name:"Push-up inclinato",primary:"Petto",secondary:["Tricipiti", "Deltoide anteriore"]},
+  {name:"Dips alle parallele",primary:"Petto",secondary:["Tricipiti", "Deltoide anteriore"]},
+  {name:"Dips ai cavi",primary:"Petto",secondary:["Tricipiti"]},
+  {name:"Technogym Chest Press",primary:"Petto",secondary:["Tricipiti", "Deltoide anteriore"]},
+  {name:"Technogym Chest Press inclinata",primary:"Petto",secondary:["Deltoide anteriore", "Tricipiti"]},
+  {name:"Technogym Chest Press declinata",primary:"Petto",secondary:["Tricipiti"]},
+  {name:"Technogym Pectoral",primary:"Petto",secondary:["Deltoide anteriore"]},
+  {name:"Technogym Pec Deck",primary:"Petto",secondary:["Deltoide anteriore"]},
+  {name:"Technogym Cable Crossover",primary:"Petto",secondary:["Deltoide anteriore", "Bicipiti"]},
+  {name:"Technogym Croci ai cavi",primary:"Petto",secondary:["Deltoide anteriore"]},
+  {name:"Technogym Butterfly",primary:"Petto",secondary:["Deltoide anteriore"]},
+  {name:"Technogym Multipower Panca piana",primary:"Petto",secondary:["Tricipiti", "Deltoide anteriore"]},
+  {name:"Technogym Multipower Panca inclinata",primary:"Petto",secondary:["Deltoide anteriore", "Tricipiti"]},
+  {name:"Lento avanti con bilanciere",primary:"Spalle",secondary:["Tricipiti", "Trapezio"]},
+  {name:"Lento avanti con manubri",primary:"Spalle",secondary:["Tricipiti", "Trapezio"]},
+  {name:"Lento dietro con bilanciere",primary:"Spalle",secondary:["Tricipiti", "Trapezio"]},
+  {name:"Arnold press",primary:"Spalle",secondary:["Tricipiti", "Deltoide laterale"]},
+  {name:"Alzate frontali con manubri",primary:"Spalle",secondary:["Petto"]},
+  {name:"Alzate frontali con bilanciere",primary:"Spalle",secondary:["Petto"]},
+  {name:"Alzate frontali al cavo",primary:"Spalle",secondary:["Petto"]},
+  {name:"Upright row con bilanciere",primary:"Spalle",secondary:["Trapezio", "Bicipiti"]},
+  {name:"Upright row con manubri",primary:"Spalle",secondary:["Trapezio", "Bicipiti"]},
+  {name:"Upright row al cavo",primary:"Spalle",secondary:["Trapezio", "Bicipiti"]},
+  {name:"Technogym Shoulder Press",primary:"Spalle",secondary:["Tricipiti", "Trapezio"]},
+  {name:"Technogym Alzate frontali machine",primary:"Spalle",secondary:["Petto"]},
+  {name:"Alzate laterali con manubri su panca piana",primary:"Spalle",secondary:["Trapezio"]},
+  {name:"Alzate laterali con manubri su panca",primary:"Spalle",secondary:["Trapezio"]},
+  {name:"Alzate laterali con manubri",primary:"Spalle",secondary:["Trapezio"]},
+  {name:"Lateral raise al cavo",primary:"Spalle",secondary:["Trapezio"]},
+  {name:"Technogym Alzate laterali al cavo",primary:"Spalle",secondary:["Trapezio"]},
+  {name:"Technogym Alzate laterali machine",primary:"Spalle",secondary:["Trapezio"]},
+  {name:"Facepull al cavo",primary:"Spalle",secondary:["Romboidi", "Trapezio"]},
+  {name:"Facepull",primary:"Spalle",secondary:["Romboidi", "Trapezio"]},
+  {name:"Rear delt fly con manubri",primary:"Spalle",secondary:["Romboidi", "Trapezio"]},
+  {name:"Rear delt fly ai cavi",primary:"Spalle",secondary:["Romboidi", "Trapezio"]},
+  {name:"Rear delt machine",primary:"Spalle",secondary:["Romboidi", "Trapezio"]},
+  {name:"Technogym Facepull",primary:"Spalle",secondary:["Romboidi", "Trapezio"]},
+  {name:"Technogym Rear Delt machine",primary:"Spalle",secondary:["Romboidi", "Trapezio"]},
+  {name:"Lat machine presa prona",primary:"Gran dorsale",secondary:["Bicipiti", "Romboidi", "Trapezio"]},
+  {name:"Lat machine presa prona (stretta)",primary:"Gran dorsale",secondary:["Bicipiti", "Romboidi"]},
+  {name:"Lat machine presa supina",primary:"Gran dorsale",secondary:["Bicipiti", "Romboidi"]},
+  {name:"Lat machine presa neutra",primary:"Gran dorsale",secondary:["Bicipiti", "Romboidi"]},
+  {name:"Pull-up",primary:"Gran dorsale",secondary:["Bicipiti", "Romboidi", "Trapezio"]},
+  {name:"Chin-up",primary:"Gran dorsale",secondary:["Bicipiti", "Romboidi"]},
+  {name:"Pull-up con zavorra",primary:"Gran dorsale",secondary:["Bicipiti", "Romboidi", "Trapezio"]},
+  {name:"Seated Row",primary:"Gran dorsale",secondary:["Bicipiti", "Romboidi", "Trapezio"]},
+  {name:"Seated Row presa stretta",primary:"Gran dorsale",secondary:["Bicipiti", "Romboidi"]},
+  {name:"Seated Row presa larga",primary:"Gran dorsale",secondary:["Bicipiti", "Romboidi", "Trapezio"]},
+  {name:"Rematore con manubri panca 30°",primary:"Gran dorsale",secondary:["Bicipiti", "Romboidi", "Trapezio"]},
+  {name:"Rematore con bilanciere",primary:"Gran dorsale",secondary:["Bicipiti", "Romboidi", "Trapezio", "Lombari"]},
+  {name:"Rematore con manubrio singolo",primary:"Gran dorsale",secondary:["Bicipiti", "Romboidi"]},
+  {name:"Rematore al cavo basso",primary:"Gran dorsale",secondary:["Bicipiti", "Romboidi"]},
+  {name:"T-bar row",primary:"Gran dorsale",secondary:["Bicipiti", "Romboidi", "Trapezio"]},
+  {name:"Cable row",primary:"Gran dorsale",secondary:["Bicipiti", "Romboidi"]},
+  {name:"Pullover con manubrio",primary:"Gran dorsale",secondary:["Tricipiti", "Petto"]},
+  {name:"Pullover al cavo",primary:"Gran dorsale",secondary:["Tricipiti", "Petto"]},
+  {name:"Technogym Lat Machine presa prona",primary:"Gran dorsale",secondary:["Bicipiti", "Romboidi", "Trapezio"]},
+  {name:"Technogym Lat Machine presa stretta",primary:"Gran dorsale",secondary:["Bicipiti", "Romboidi"]},
+  {name:"Technogym Lat Machine presa supina",primary:"Gran dorsale",secondary:["Bicipiti", "Romboidi"]},
+  {name:"Technogym Low Row",primary:"Gran dorsale",secondary:["Bicipiti", "Romboidi"]},
+  {name:"Technogym Seated Row",primary:"Gran dorsale",secondary:["Bicipiti", "Romboidi", "Trapezio"]},
+  {name:"Technogym Vertical Traction",primary:"Gran dorsale",secondary:["Bicipiti", "Romboidi"]},
+  {name:"Technogym High Row",primary:"Gran dorsale",secondary:["Bicipiti", "Romboidi", "Trapezio"]},
+  {name:"Technogym Rowing machine",primary:"Gran dorsale",secondary:["Bicipiti", "Romboidi", "Lombari"]},
+  {name:"Technogym Chin-up / Dip",primary:"Gran dorsale",secondary:["Bicipiti", "Tricipiti"]},
+  {name:"Technogym Pull-up assistito",primary:"Gran dorsale",secondary:["Bicipiti", "Romboidi"]},
+  {name:"Scrollate con manubri",primary:"Trapezio",secondary:["Lombari", "Glutei"]},
+  {name:"Scrollate con bilanciere",primary:"Trapezio",secondary:["Lombari", "Glutei"]},
+  {name:"Technogym Upright Row",primary:"Trapezio",secondary:["Spalle", "Bicipiti"]},
+  {name:"Technogym Reverse Fly machine",primary:"Trapezio",secondary:["Romboidi", "Spalle"]},
+  {name:"Stacco da terra con bilanciere",primary:"Lombari",secondary:["Glutei", "Femorali", "Trapezio", "Gran dorsale"]},
+  {name:"Romanian deadlift",primary:"Lombari",secondary:["Glutei", "Femorali"]},
+  {name:"Stacco sumo",primary:"Lombari",secondary:["Glutei", "Femorali", "Adduttori"]},
+  {name:"Iperextension",primary:"Lombari",secondary:["Glutei", "Femorali"]},
+  {name:"Back extension su panca",primary:"Lombari",secondary:["Glutei", "Femorali"]},
+  {name:"Technogym Lower Back",primary:"Lombari",secondary:["Glutei", "Femorali"]},
+  {name:"Technogym Back Extension",primary:"Lombari",secondary:["Glutei", "Femorali"]},
+  {name:"Technogym Back Extension machine",primary:"Lombari",secondary:["Glutei", "Femorali"]},
+  {name:"Curl bilanciere",primary:"Bicipiti",secondary:["Brachiale", "Avambracci"]},
+  {name:"Curl bilanciere EZ",primary:"Bicipiti",secondary:["Brachiale", "Avambracci"]},
+  {name:"Curl panca Scott con manubrio singolo",primary:"Bicipiti",secondary:["Brachiale"]},
+  {name:"Curl panca Scott bilanciere EZ",primary:"Bicipiti",secondary:["Brachiale"]},
+  {name:"Hammer curl",primary:"Bicipiti",secondary:["Brachiale", "Avambracci"]},
+  {name:"Hammer curl al cavo",primary:"Bicipiti",secondary:["Brachiale", "Avambracci"]},
+  {name:"Concentration curl",primary:"Bicipiti",secondary:["Brachiale"]},
+  {name:"Incline dumbbell curl",primary:"Bicipiti",secondary:["Brachiale"]},
+  {name:"Curl ai cavi",primary:"Bicipiti",secondary:["Brachiale"]},
+  {name:"Preacher curl",primary:"Bicipiti",secondary:["Brachiale"]},
+  {name:"Zottman curl",primary:"Bicipiti",secondary:["Avambracci", "Brachiale"]},
+  {name:"Reverse curl",primary:"Bicipiti",secondary:["Avambracci", "Brachiale"]},
+  {name:"Curl su panca inclinata",primary:"Bicipiti",secondary:["Brachiale"]},
+  {name:"Technogym Arm Curl (bicipiti)",primary:"Bicipiti",secondary:["Brachiale"]},
+  {name:"Technogym Preacher Curl machine",primary:"Bicipiti",secondary:["Brachiale"]},
+  {name:"Technogym Curl ai cavi",primary:"Bicipiti",secondary:["Brachiale"]},
+  {name:"Technogym Biceps Curl machine",primary:"Bicipiti",secondary:["Brachiale"]},
+  {name:"Technogym Hammer Curl machine",primary:"Bicipiti",secondary:["Brachiale", "Avambracci"]},
+  {name:"Push down con barra",primary:"Tricipiti",secondary:["Avambracci"]},
+  {name:"Push down con corda",primary:"Tricipiti",secondary:["Avambracci"]},
+  {name:"Push down al cavo presa prona",primary:"Tricipiti",secondary:[]},
+  {name:"Push down al cavo presa supina",primary:"Tricipiti",secondary:[]},
+  {name:"Distensioni dietro",primary:"Tricipiti",secondary:[]},
+  {name:"Tricep overhead extension",primary:"Tricipiti",secondary:[]},
+  {name:"Skull crushers",primary:"Tricipiti",secondary:[]},
+  {name:"JM press",primary:"Tricipiti",secondary:["Petto"]},
+  {name:"Kickback con manubrio",primary:"Tricipiti",secondary:[]},
+  {name:"Kickback al cavo",primary:"Tricipiti",secondary:[]},
+  {name:"Close grip bench press",primary:"Tricipiti",secondary:["Petto", "Spalle"]},
+  {name:"French press",primary:"Tricipiti",secondary:[]},
+  {name:"Technogym Arm Extension (tricipiti)",primary:"Tricipiti",secondary:[]},
+  {name:"Technogym Triceps Press machine",primary:"Tricipiti",secondary:[]},
+  {name:"Technogym Push down con corda",primary:"Tricipiti",secondary:[]},
+  {name:"Technogym Push down con barra",primary:"Tricipiti",secondary:[]},
+  {name:"Technogym Dips machine",primary:"Tricipiti",secondary:["Petto"]},
+  {name:"Technogym Overhead Triceps Extension machine",primary:"Tricipiti",secondary:[]},
+  {name:"Crunch",primary:"Core",secondary:["Obliqui"]},
+  {name:"Crunch al cavo alto",primary:"Core",secondary:["Obliqui"]},
+  {name:"Crunch inverso",primary:"Core",secondary:["Obliqui"]},
+  {name:"Crunch obliquo",primary:"Core",secondary:["Obliqui"]},
+  {name:"Leg raise",primary:"Core",secondary:["Femorali"]},
+  {name:"Hanging leg raise",primary:"Core",secondary:["Femorali"]},
+  {name:"Hanging knee raise",primary:"Core",secondary:[]},
+  {name:"Ab wheel",primary:"Core",secondary:["Lombari", "Spalle"]},
+  {name:"Cable crunch",primary:"Core",secondary:["Obliqui"]},
+  {name:"Technogym Abdominal Crunch machine",primary:"Core",secondary:["Obliqui"]},
+  {name:"Technogym Croci ai cavi dall'alto",primary:"Core",secondary:[]},
+  {name:"Technogym Oblique machine",primary:"Core",secondary:["Obliqui"]},
+  {name:"Plank",primary:"Core",secondary:["Lombari", "Spalle", "Glutei"]},
+  {name:"Plank laterale",primary:"Core",secondary:["Obliqui", "Spalle"]},
+  {name:"Plank con elevazione gamba",primary:"Core",secondary:["Glutei", "Lombari"]},
+  {name:"Russian twist",primary:"Core",secondary:["Obliqui"]},
+  {name:"Mountain climber",primary:"Core",secondary:["Spalle", "Femorali"]},
+  {name:"Hollow body hold",primary:"Core",secondary:["Lombari"]},
+  {name:"Dead bug",primary:"Core",secondary:["Lombari"]},
+  {name:"Bird dog",primary:"Core",secondary:["Glutei", "Lombari"]},
+  {name:"Pallof press",primary:"Core",secondary:["Obliqui", "Spalle"]},
+  {name:"Rotary torso",primary:"Core",secondary:["Obliqui"]},
+  {name:"Woodchop al cavo alto",primary:"Core",secondary:["Obliqui", "Spalle"]},
+  {name:"Woodchop al cavo basso",primary:"Core",secondary:["Obliqui", "Spalle"]},
+  {name:"Technogym Rotary Torso",primary:"Core",secondary:["Obliqui"]},
+  {name:"Technogym Core trainer",primary:"Core",secondary:["Lombari"]},
+  {name:"Squat con bilanciere",primary:"Quadricipiti",secondary:["Glutei", "Femorali", "Lombari", "Core"]},
+  {name:"Squat frontale con bilanciere",primary:"Quadricipiti",secondary:["Glutei", "Femorali", "Core"]},
+  {name:"Squat con manubri",primary:"Quadricipiti",secondary:["Glutei", "Femorali"]},
+  {name:"Goblet squat",primary:"Quadricipiti",secondary:["Glutei", "Femorali", "Core"]},
+  {name:"Leg press a 45°",primary:"Quadricipiti",secondary:["Glutei", "Femorali"]},
+  {name:"Hack squat",primary:"Quadricipiti",secondary:["Glutei", "Femorali"]},
+  {name:"Sumo squat",primary:"Quadricipiti",secondary:["Glutei", "Adduttori"]},
+  {name:"Bulgarian split squat",primary:"Quadricipiti",secondary:["Glutei", "Femorali", "Core"]},
+  {name:"Affondi con manubri",primary:"Quadricipiti",secondary:["Glutei", "Femorali"]},
+  {name:"Affondi con bilanciere",primary:"Quadricipiti",secondary:["Glutei", "Femorali"]},
+  {name:"Affondi cammino",primary:"Quadricipiti",secondary:["Glutei", "Femorali"]},
+  {name:"Step-up con manubri",primary:"Quadricipiti",secondary:["Glutei", "Femorali"]},
+  {name:"Leg Extension",primary:"Quadricipiti",secondary:[]},
+  {name:"Technogym Leg Press",primary:"Quadricipiti",secondary:["Glutei", "Femorali"]},
+  {name:"Technogym Leg Press 45°",primary:"Quadricipiti",secondary:["Glutei", "Femorali"]},
+  {name:"Technogym Leg Extension",primary:"Quadricipiti",secondary:[]},
+  {name:"Technogym Squat machine",primary:"Quadricipiti",secondary:["Glutei", "Femorali"]},
+  {name:"Technogym Smith Machine (Multipower)",primary:"Quadricipiti",secondary:["Glutei", "Femorali"]},
+  {name:"Technogym Hack Squat",primary:"Quadricipiti",secondary:["Glutei", "Femorali"]},
+  {name:"Stacco e gambe tese con bilanciere",primary:"Femorali",secondary:["Glutei", "Lombari"]},
+  {name:"Leg Curl da seduto",primary:"Femorali",secondary:[]},
+  {name:"Leg Curl sdraiato",primary:"Femorali",secondary:[]},
+  {name:"Technogym Leg Curl da seduto",primary:"Femorali",secondary:[]},
+  {name:"Technogym Leg Curl sdraiato",primary:"Femorali",secondary:[]},
+  {name:"Technogym Leg Curl in piedi",primary:"Femorali",secondary:[]},
+  {name:"Technogym Romanian Deadlift machine",primary:"Femorali",secondary:["Glutei", "Lombari"]},
+  {name:"Hip thrust",primary:"Glutei",secondary:["Femorali", "Core"]},
+  {name:"Hip thrust con bilanciere",primary:"Glutei",secondary:["Femorali", "Core"]},
+  {name:"Glute bridge",primary:"Glutei",secondary:["Femorali", "Core"]},
+  {name:"Technogym Glute machine",primary:"Glutei",secondary:["Femorali"]},
+  {name:"Technogym Hip Thrust machine",primary:"Glutei",secondary:["Femorali", "Core"]},
+  {name:"Adductor",primary:"Adduttori",secondary:["Glutei"]},
+  {name:"Technogym Adductor",primary:"Adduttori",secondary:["Glutei"]},
+  {name:"Abduttore",primary:"Abduttori",secondary:["Glutei"]},
+  {name:"Abductor machine",primary:"Abduttori",secondary:["Glutei"]},
+  {name:"Technogym Abductor",primary:"Abduttori",secondary:["Glutei"]},
+  {name:"Technogym Hip Abductor",primary:"Abduttori",secondary:["Glutei"]},
+  {name:"Polpacci con ginocchio esteso",primary:"Polpacci",secondary:[]},
+  {name:"Calf raise in piedi",primary:"Polpacci",secondary:[]},
+  {name:"Calf raise seduto",primary:"Polpacci",secondary:[]},
+  {name:"Leg press calf raise",primary:"Polpacci",secondary:[]},
+  {name:"Donkey calf raise",primary:"Polpacci",secondary:[]},
+  {name:"Technogym Calf raise",primary:"Polpacci",secondary:[]},
+  {name:"Technogym Seated Calf raise",primary:"Polpacci",secondary:[]},
+  {name:"Cardio zona 3",primary:"Cardio",secondary:[]},
+  {name:"Tapis roulant",primary:"Cardio",secondary:[]},
+  {name:"Cyclette",primary:"Cardio",secondary:[]},
+  {name:"Ellittica",primary:"Cardio",secondary:[]},
+  {name:"Vogatore",primary:"Cardio",secondary:["Gran dorsale", "Quadricipiti", "Core"]},
+  {name:"Jumping rope",primary:"Cardio",secondary:["Polpacci", "Spalle"]},
+  {name:"HIIT",primary:"Cardio",secondary:[]},
+  {name:"Nuoto",primary:"Cardio",secondary:["Gran dorsale", "Spalle", "Core"]},
+  {name:"StairClimber",primary:"Cardio",secondary:["Quadricipiti", "Glutei", "Polpacci"]},
+  {name:"Corsa outdoor",primary:"Cardio",secondary:["Quadricipiti", "Femorali", "Polpacci"]},
+  {name:"Camminata veloce",primary:"Cardio",secondary:["Quadricipiti", "Polpacci"]},
+  {name:"Corsa in salita",primary:"Cardio",secondary:["Glutei", "Femorali", "Polpacci"]},
+  {name:"Technogym Tapis roulant Excite Run",primary:"Cardio",secondary:[]},
+  {name:"Technogym Cyclette Excite Bike",primary:"Cardio",secondary:[]},
+  {name:"Technogym Bike Recumbent",primary:"Cardio",secondary:[]},
+  {name:"Technogym Ellittica Excite Cross",primary:"Cardio",secondary:[]},
+  {name:"Technogym Vogatore Excite Row",primary:"Cardio",secondary:["Gran dorsale", "Quadricipiti", "Core"]},
+  {name:"Technogym Ski Erg",primary:"Cardio",secondary:["Gran dorsale", "Core", "Spalle"]},
+  {name:"Technogym StairClimber",primary:"Cardio",secondary:["Quadricipiti", "Glutei", "Polpacci"]},
+  {name:"Technogym Synchro (ellittica verticale)",primary:"Cardio",secondary:[]},
+  {name:"Technogym Bike SKILLBIKE",primary:"Cardio",secondary:[]},
+  {name:"Technogym Run Artis",primary:"Cardio",secondary:[]},
+  {name:"Technogym Climb",primary:"Cardio",secondary:["Quadricipiti", "Glutei", "Polpacci"]},
+];
+
+// Flat list for backward compatibility
+const ALL_EXERCISES = EXERCISE_DB.map(function(e){{return e.name;}}).filter(function(v,i,a){{return a.indexOf(v)===i;}});
 
 const CARDIO_NAMES = ["Cardio zona 3","Tapis roulant","Cyclette","Ellittica","Vogatore","Jumping rope","HIIT","Nuoto"];
 const SETS_NORMAL = 4;
@@ -531,6 +647,50 @@ function getAllExercises(){
   var custom = loadCustomExercises();
   var all = ALL_EXERCISES.concat(custom.filter(function(e){ return ALL_EXERCISES.indexOf(e)<0; }));
   return all;
+}
+
+function getExerciseInfo(name){
+  var found = EXERCISE_DB.find(function(e){ return e.name===name; });
+  return found || {name:name, primary:"", secondary:[]};
+}
+
+// Returns exercises grouped by primary muscle, filtered by query
+// query matches name, primary, or secondary muscles
+function getExercisesGrouped(q){
+  var custom = loadCustomExercises();
+  var allDB = EXERCISE_DB.concat(
+    custom.filter(function(n){ return !EXERCISE_DB.find(function(e){ return e.name===n; }); })
+          .map(function(n){ return {name:n, primary:"Personalizzati", secondary:[]}; })
+  );
+  
+  if(q && q.trim()){
+    var ql = q.trim().toLowerCase();
+    allDB = allDB.filter(function(e){
+      return e.name.toLowerCase().indexOf(ql)>=0 ||
+             e.primary.toLowerCase().indexOf(ql)>=0 ||
+             e.secondary.some(function(s){ return s.toLowerCase().indexOf(ql)>=0; });
+    });
+  }
+  
+  // Group by primary
+  var groups = {};
+  var order = ["Petto","Spalle","Gran dorsale","Trapezio","Lombari","Bicipiti","Tricipiti","Core","Quadricipiti","Femorali","Glutei","Adduttori","Abduttori","Polpacci","Cardio","Personalizzati"];
+  allDB.forEach(function(e){
+    var cat = e.primary || "Altro";
+    if(!groups[cat]) groups[cat] = [];
+    groups[cat].push(e);
+  });
+  
+  // Return in order
+  var result = [];
+  order.forEach(function(cat){
+    if(groups[cat] && groups[cat].length) result.push({category:cat, exercises:groups[cat]});
+  });
+  // Any remaining categories not in order
+  Object.keys(groups).forEach(function(cat){
+    if(order.indexOf(cat)<0) result.push({category:cat, exercises:groups[cat]});
+  });
+  return result;
 }
 function renameExerciseGlobally(oldName, newName){
   // Aggiorna in ALL_EXERCISES custom
@@ -755,88 +915,18 @@ function openAddExToWorkout(){
   exListEl.id = "ew-addex-list";
 
   function fillList(q){
-    exListEl.innerHTML = "";
-    var customList = loadCustomExercises();
-
-    // Crea nuovo esercizio
-    if(q && q.trim()){
-      var qTrim = q.trim();
-      var exists = getAllExercises().some(function(e){ return e.toLowerCase()===qTrim.toLowerCase(); });
-      if(!exists){
-        var createRow = document.createElement("div");
-        createRow.style.cssText = "padding:13px 10px;border-bottom:2px solid #e5e5ea;display:flex;justify-content:space-between;align-items:center;font-size:17px;cursor:pointer;color:#34C759;font-weight:600;";
-        createRow.textContent = '+ Crea "' + qTrim + '"';
-        createRow.onclick = function(){
-          var newEx = qTrim;
-          var custom = loadCustomExercises();
-          if(custom.indexOf(newEx)<0 && ALL_EXERCISES.indexOf(newEx)<0){
-            custom.push(newEx);
-            saveCustomExercises(custom);
-          }
-          editingWorkoutExercises.push(newEx);
-          renderEWExercises();
-          overlay.remove();
-          ewAddExOverlay = null;
-        };
-        exListEl.appendChild(createRow);
-      }
-    }
-
-    getAllExercises().filter(function(e){ return !q || e.toLowerCase().indexOf(q.toLowerCase())>=0; })
-    .forEach(function(ex){
-      var already = editingWorkoutExercises.indexOf(ex)>=0;
-      var isCustom = customList.indexOf(ex)>=0;
-      var item = document.createElement("div");
-      item.style.cssText = "padding:13px 10px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;font-size:17px;"+(already?"color:#c7c7cc;":"color:#1c1c1e;cursor:pointer;");
-
-      var left = document.createElement("div");
-      left.style.flex = "1";
-      var nameText = document.createTextNode(ex);
-      left.appendChild(nameText);
-      if(isCustom){
-        var badge = document.createElement("span");
-        badge.style.cssText = "font-size:11px;background:#f2f2f7;color:#8e8e93;border-radius:6px;padding:2px 6px;margin-left:8px;";
-        badge.textContent = "custom";
-        left.appendChild(badge);
-      }
-
-      var right = document.createElement("div");
-      right.style.cssText = "display:flex;align-items:center;gap:8px;";
-
-      if(isCustom && !already){
-        var renBtn = document.createElement("button");
-        renBtn.style.cssText = "background:none;border:none;font-size:15px;cursor:pointer;padding:2px 4px;color:#8e8e93;";
-        renBtn.textContent = "[ren]";
-        (function(n){ renBtn.onclick = function(e){
-          e.stopPropagation();
-          var newName = prompt("Nuovo nome per: " + n, n);
-          if(!newName || !newName.trim()) return;
-          newName = newName.trim();
-          if(getAllExercises().indexOf(newName)>=0 && newName!==n){
-            alert("Esiste gia un esercizio con questo nome."); return;
-          }
-          renameExerciseGlobally(n, newName);
-          fillList(search.value);
-        }; })(ex);
-        right.appendChild(renBtn);
-      }
-
-      var plus = document.createElement("span");
-      plus.style.cssText = "font-size:22px;color:"+(already?"#d1d1d6":"#34C759");
-      plus.textContent = already ? "v" : "+";
-      right.appendChild(plus);
-
-      item.appendChild(left); item.appendChild(right);
-      if(!already){
-        (function(n){ item.onclick = function(){
-          editingWorkoutExercises.push(n);
-          renderEWExercises();
-          overlay.remove();
-          ewAddExOverlay = null;
-        }; })(ex);
-      }
-      exListEl.appendChild(item);
-    });
+    renderGroupedExList(
+      exListEl,
+      q,
+      function(name){
+        editingWorkoutExercises.push(name);
+        renderEWExercises();
+        overlay.remove();
+        ewAddExOverlay = null;
+      },
+      editingWorkoutExercises,
+      function(){ fillList(search.value); }
+    );
   }
 
   search.oninput = function(){ fillList(this.value); };
@@ -1703,75 +1793,107 @@ function openAddEx(){
   setTimeout(function(){document.getElementById("addex-search").focus();},300);
 }
 function closeAddEx(){ document.getElementById("addex-overlay").classList.remove("open"); }
-function filterAddEx(query){
-  var q=query.toLowerCase().trim();
-  var container=document.getElementById("addex-list");
-  container.innerHTML="";
-  var customList = loadCustomExercises();
 
-  // Crea nuovo esercizio se la ricerca non trova match esatti
-  if(q){
-    var exists = getAllExercises().some(function(e){ return e.toLowerCase()===q; });
+function renderGroupedExList(container, q, onSelect, selectedList, onRename){
+  container.innerHTML = "";
+  var customList = loadCustomExercises();
+  
+  // Crea nuovo esercizio se non esiste
+  if(q && q.trim()){
+    var qTrim = q.trim();
+    var exists = getAllExercises().some(function(e){ return e.toLowerCase()===qTrim.toLowerCase(); });
     if(!exists){
-      var createRow=document.createElement("div");
-      createRow.className="addex-item";
-      createRow.style.cssText="color:#34C759;font-weight:600;border-bottom:2px solid #e5e5ea;";
-      var plusEl=document.createElement("span"); plusEl.className="addex-plus"; plusEl.textContent="\u271A";
-      createRow.appendChild(document.createTextNode('\uFF0B Crea "'+query.trim()+'"'));
-      createRow.appendChild(plusEl);
-      createRow.onclick=function(){
-        var newEx=query.trim();
-        var custom=loadCustomExercises();
-        if(custom.indexOf(newEx)<0 && ALL_EXERCISES.indexOf(newEx)<0){
-          custom.push(newEx); saveCustomExercises(custom);
+      var createRow = document.createElement("div");
+      createRow.style.cssText = "padding:13px 14px;border-bottom:2px solid #e5e5ea;display:flex;justify-content:space-between;align-items:center;font-size:17px;cursor:pointer;color:#34C759;font-weight:600;";
+      createRow.textContent = '+ Crea "' + qTrim + '"';
+      createRow.onclick = function(){
+        var custom = loadCustomExercises();
+        if(custom.indexOf(qTrim)<0 && ALL_EXERCISES.indexOf(qTrim)<0){
+          custom.push(qTrim); saveCustomExercises(custom);
         }
-        addExercise(newEx);
+        onSelect(qTrim);
       };
       container.appendChild(createRow);
     }
   }
 
-  var filtered=getAllExercises().filter(function(e){return !q||e.toLowerCase().indexOf(q)>=0;});
-  filtered.forEach(function(ex){
-    var already=sessionExercises.indexOf(ex)>=0;
-    var isCustom=customList.indexOf(ex)>=0;
-    var item=document.createElement("div");
-    item.className="addex-item"+(already?" already":"");
-    item.style.display="flex"; item.style.alignItems="center";
-
-    var nameWrap=document.createElement("span"); nameWrap.style.flex="1";
-    nameWrap.textContent=ex;
-    if(isCustom){
-      var badge=document.createElement("span");
-      badge.style.cssText="font-size:11px;background:#f2f2f7;color:#8e8e93;border-radius:6px;padding:2px 6px;margin-left:6px;";
-      badge.textContent="custom"; nameWrap.appendChild(badge);
-    }
-    item.appendChild(nameWrap);
-
-    if(isCustom && !already){
-      var renBtn=document.createElement("button");
-      renBtn.style.cssText="background:none;border:none;font-size:16px;cursor:pointer;padding:2px 6px;color:#8e8e93;";
-      renBtn.textContent="\u270F";
-      (function(n){renBtn.onclick=function(e){
-        e.stopPropagation();
-        var newName=prompt("Nuovo nome per: "+n, n);
-        if(!newName||!newName.trim()) return;
-        newName=newName.trim();
-        if(getAllExercises().indexOf(newName)>=0 && newName!==n){
-          alert("Esiste già un esercizio con questo nome."); return;
-        }
-        renameExerciseGlobally(n,newName);
-        filterAddEx(document.getElementById("addex-search").value||"");
-      };})(ex);
-      item.appendChild(renBtn);
-    }
-
-    var plus=document.createElement("span"); plus.className="addex-plus";
-    plus.textContent=already?"\u2713":"+";
-    item.appendChild(plus);
-    if(!already){(function(n){item.onclick=function(){addExercise(n);};})(ex);}
-    container.appendChild(item);
+  var groups = getExercisesGrouped(q);
+  groups.forEach(function(group){
+    // Category header
+    var header = document.createElement("div");
+    header.style.cssText = "padding:8px 14px 4px;font-size:12px;font-weight:700;color:#8e8e93;text-transform:uppercase;letter-spacing:0.5px;background:#f8f8f8;border-bottom:1px solid #f0f0f0;";
+    header.textContent = group.category;
+    container.appendChild(header);
+    
+    group.exercises.forEach(function(ex){
+      var already = selectedList && selectedList.indexOf(ex.name)>=0;
+      var isCustom = customList.indexOf(ex.name)>=0;
+      
+      var item = document.createElement("div");
+      item.style.cssText = "padding:12px 14px;border-bottom:1px solid #f5f5f7;display:flex;align-items:center;gap:8px;"+(already?"opacity:.5;":"cursor:pointer;");
+      
+      var info = document.createElement("div");
+      info.style.flex = "1";
+      var nameEl = document.createElement("div");
+      nameEl.style.cssText = "font-size:16px;color:#1c1c1e;"+(already?"font-weight:400;":"font-weight:600;");
+      nameEl.textContent = ex.name;
+      info.appendChild(nameEl);
+      if(ex.secondary && ex.secondary.length){
+        var sec = document.createElement("div");
+        sec.style.cssText = "font-size:12px;color:#8e8e93;margin-top:2px;";
+        sec.textContent = ex.secondary.join(", ");
+        info.appendChild(sec);
+      }
+      if(isCustom){
+        var badge = document.createElement("span");
+        badge.style.cssText = "font-size:10px;background:#f2f2f7;color:#8e8e93;border-radius:5px;padding:1px 5px;margin-left:6px;";
+        badge.textContent = "custom";
+        nameEl.appendChild(badge);
+      }
+      item.appendChild(info);
+      
+      // Rename button for custom exercises
+      if(isCustom && !already && onRename){
+        var renBtn = document.createElement("button");
+        renBtn.style.cssText = "background:none;border:none;font-size:15px;cursor:pointer;padding:2px 4px;color:#8e8e93;flex-shrink:0;";
+        renBtn.textContent = "\u270F";
+        (function(n){ renBtn.onclick = function(e){
+          e.stopPropagation();
+          var newName = prompt("Nuovo nome: ", n);
+          if(!newName||!newName.trim()) return;
+          newName = newName.trim();
+          if(getAllExercises().indexOf(newName)>=0 && newName!==n){ alert("Nome gi\u00e0 esistente."); return; }
+          renameExerciseGlobally(n, newName);
+          onRename();
+        }; })(ex.name);
+        item.appendChild(renBtn);
+      }
+      
+      var plus = document.createElement("span");
+      plus.style.cssText = "font-size:22px;color:"+(already?"#d1d1d6":"#34C759")+";flex-shrink:0;";
+      plus.textContent = already ? "\u2713" : "+";
+      item.appendChild(plus);
+      
+      if(!already){
+        (function(n){ item.onclick = function(){ onSelect(n); }; })(ex.name);
+      }
+      container.appendChild(item);
+    });
   });
+  
+  if(!groups.length && !(q && q.trim())){
+    container.innerHTML = '<div style="text-align:center;padding:30px;color:#8e8e93;">Nessun esercizio</div>';
+  }
+}
+function filterAddEx(query){
+  var container = document.getElementById("addex-list");
+  renderGroupedExList(
+    container,
+    query,
+    function(name){ addExercise(name); closeAddEx(); },
+    sessionExercises,
+    function(){ filterAddEx(document.getElementById("addex-search").value||""); }
+  );
 }
 function addExercise(ex){
   var ei=sessionExercises.length;
