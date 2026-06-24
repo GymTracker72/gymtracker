@@ -377,80 +377,116 @@ const BASE_WORKOUTS = {
 };
 
 const ALL_EXERCISES = [
-  // ── TECHNOGYM ISOTONICO ──
-  // Petto
-  "Technogym Chest Press","Technogym Chest Press inclinata","Technogym Pec Deck",
-  "Technogym Cable Crossover","Technogym Croci ai cavi",
-  // Spalle
+  // ── TECHNOGYM ISOTONICO ── PETTO ──
+  "Technogym Chest Press","Technogym Chest Press inclinata","Technogym Chest Press declinata",
+  "Technogym Pectoral","Technogym Pec Deck","Technogym Cable Crossover","Technogym Croci ai cavi",
+  "Technogym Butterfly","Technogym Multipower Panca piana","Technogym Multipower Panca inclinata",
+  // ── TECHNOGYM ISOTONICO ── SPALLE ──
   "Technogym Shoulder Press","Technogym Alzate laterali al cavo",
-  "Technogym Upright Row","Technogym Facepull",
-  // Tricipiti
-  "Technogym Arm Extension (tricipiti)","Technogym Push down con corda",
-  "Technogym Dips machine",
-  // Schiena
+  "Technogym Alzate laterali machine","Technogym Alzate frontali machine",
+  "Technogym Upright Row","Technogym Facepull","Technogym Rear Delt machine",
+  // ── TECHNOGYM ISOTONICO ── TRICIPITI ──
+  "Technogym Arm Extension (tricipiti)","Technogym Triceps Press machine",
+  "Technogym Push down con corda","Technogym Push down con barra",
+  "Technogym Dips machine","Technogym Overhead Triceps Extension machine",
+  // ── TECHNOGYM ISOTONICO ── SCHIENA ──
   "Technogym Lat Machine presa prona","Technogym Lat Machine presa stretta",
   "Technogym Lat Machine presa supina","Technogym Low Row",
   "Technogym Seated Row","Technogym Vertical Traction",
   "Technogym Lower Back","Technogym Back Extension",
   "Technogym Chin-up / Dip","Technogym Pull-up assistito",
-  // Bicipiti
+  "Technogym Rowing machine","Technogym High Row","Technogym Reverse Fly machine",
+  // ── TECHNOGYM ISOTONICO ── BICIPITI ──
   "Technogym Arm Curl (bicipiti)","Technogym Preacher Curl machine",
-  "Technogym Curl ai cavi",
-  // Gambe
-  "Technogym Leg Press","Technogym Leg Extension",
-  "Technogym Leg Curl da seduto","Technogym Leg Curl sdraiato",
-  "Technogym Adductor","Technogym Abductor",
-  "Technogym Glute machine","Technogym Hip Abductor",
-  "Technogym Calf raise","Technogym Squat machine",
-  "Technogym Smith Machine (Multipower)",
-  // Core
+  "Technogym Curl ai cavi","Technogym Biceps Curl machine",
+  "Technogym Hammer Curl machine",
+  // ── TECHNOGYM ISOTONICO ── GAMBE ──
+  "Technogym Leg Press","Technogym Leg Press 45°","Technogym Leg Extension",
+  "Technogym Leg Curl da seduto","Technogym Leg Curl sdraiato","Technogym Leg Curl in piedi",
+  "Technogym Adductor","Technogym Abductor","Technogym Hip Abductor",
+  "Technogym Glute machine","Technogym Hip Thrust machine",
+  "Technogym Calf raise","Technogym Seated Calf raise",
+  "Technogym Squat machine","Technogym Smith Machine (Multipower)",
+  "Technogym Hack Squat","Technogym Romanian Deadlift machine",
+  // ── TECHNOGYM ISOTONICO ── CORE ──
   "Technogym Abdominal Crunch machine","Technogym Rotary Torso",
-  "Technogym Core trainer",
+  "Technogym Core trainer","Technogym Back Extension machine",
+  "Technogym Croci ai cavi dall'alto","Technogym Oblique machine",
   // ── TECHNOGYM CARDIO (EXCITE) ──
   "Technogym Tapis roulant Excite Run","Technogym Cyclette Excite Bike",
   "Technogym Bike Recumbent","Technogym Ellittica Excite Cross",
   "Technogym Vogatore Excite Row","Technogym Ski Erg",
   "Technogym StairClimber","Technogym Synchro (ellittica verticale)",
+  "Technogym Bike SKILLBIKE","Technogym Run Artis","Technogym Climb",
   // ── PETTO (libero) ──
   "Panca piana con bilanciere","Panca piana con manubri",
   "Panca inclinata con bilanciere","Panca inclinata con manubri",
-  "Panca declinata con bilanciere","Chest Press inclinata",
-  "Spinte con manubri panca piana","Pec deck","Cable crossover",
-  "Croci con manubri","Croci ai cavi bassi","Push-up","Dips alle parallele",
+  "Panca declinata con bilanciere","Panca declinata con manubri",
+  "Chest Press inclinata","Spinte con manubri panca piana",
+  "Spinte con manubri panca inclinata","Pectoral machine",
+  "Pec deck","Cable crossover","Croci con manubri",
+  "Croci ai cavi bassi","Croci ai cavi alti","Push-up","Push-up inclinato",
+  "Dips alle parallele","Dips ai cavi",
   // ── SPALLE (libero) ──
-  "Lento avanti con bilanciere","Lento avanti con manubri","Arnold press",
+  "Lento avanti con bilanciere","Lento avanti con manubri",
+  "Lento dietro con bilanciere","Arnold press",
   "Alzate laterali con manubri su panca piana",
-  "Alzate laterali con manubri su panca","Lateral raise al cavo",
+  "Alzate laterali con manubri su panca",
+  "Alzate laterali con manubri","Lateral raise al cavo",
   "Alzate frontali con manubri","Alzate frontali con bilanciere",
-  "Facepull al cavo","Scrollate con manubri","Scrollate con bilanciere",
+  "Alzate frontali al cavo","Facepull al cavo",
+  "Scrollate con manubri","Scrollate con bilanciere",
   "Upright row con bilanciere","Upright row con manubri",
+  "Upright row al cavo","Rear delt fly con manubri",
+  "Rear delt fly ai cavi","Rear delt machine",
   // ── TRICIPITI (libero) ──
   "Push down con barra","Push down con barre","Push down con corda",
-  "Distensioni dietro","Tricep overhead extension","Skull crushers",
-  "Kickback con manubrio","Close grip bench press",
+  "Push down al cavo presa prona","Push down al cavo presa supina",
+  "Distensioni dietro","Tricep overhead extension",
+  "Skull crushers","JM press",
+  "Kickback con manubrio","Kickback al cavo",
+  "Close grip bench press","French press",
   // ── SCHIENA (libero) ──
   "Lat machine presa prona","Lat machine presa prona (stretta)",
-  "Lat machine presa supina","Pull-up","Chin-up",
-  "Seated Row","Rematore con manubri panca 30°","Rematore con bilanciere",
-  "Rematore con manubrio singolo","T-bar row","Cable row",
+  "Lat machine presa supina","Lat machine presa neutra",
+  "Pull-up","Chin-up","Pull-up con zavorra",
+  "Seated Row","Seated Row presa stretta","Seated Row presa larga",
+  "Rematore con manubri panca 30°","Rematore con bilanciere",
+  "Rematore con manubrio singolo","Rematore al cavo basso",
+  "T-bar row","Cable row","Facepull","Pullover con manubrio",
+  "Pullover al cavo","Shrug con manubri","Shrug con bilanciere",
+  "Stacco da terra con bilanciere","Romanian deadlift",
+  "Iperextension","Back extension su panca",
   // ── BICIPITI (libero) ──
-  "Curl bilanciere","Curl bilanciere EZ","Curl panca Scott con manubrio singolo",
-  "Curl panca Scott bilanciere EZ","Hammer curl","Concentration curl",
-  "Incline dumbbell curl","Curl ai cavi","Preacher curl",
+  "Curl bilanciere","Curl bilanciere EZ",
+  "Curl panca Scott con manubrio singolo","Curl panca Scott bilanciere EZ",
+  "Hammer curl","Hammer curl al cavo",
+  "Concentration curl","Incline dumbbell curl",
+  "Curl ai cavi","Preacher curl","Zottman curl",
+  "Reverse curl","Curl su panca inclinata",
   // ── GAMBE (libero) ──
-  "Squat con bilanciere","Squat con manubri","Leg press a 45°",
-  "Stacco e gambe tese con bilanciere","Romanian deadlift","Stacco sumo",
+  "Squat con bilanciere","Squat frontale con bilanciere",
+  "Squat con manubri","Goblet squat","Leg press a 45°",
+  "Hack squat","Stacco e gambe tese con bilanciere",
+  "Stacco sumo","Sumo squat","Bulgarian split squat",
+  "Affondi con manubri","Affondi con bilanciere",
+  "Affondi cammino","Step-up con manubri",
   "Leg Extension","Leg Curl da seduto","Leg Curl sdraiato",
-  "Affondi con manubri","Affondi con bilanciere","Bulgarian split squat",
-  "Hip thrust","Adductor","Abduttore","Polpacci con ginocchio esteso",
-  "Calf raise in piedi","Calf raise seduto","Leg press calf raise",
+  "Hip thrust","Hip thrust con bilanciere","Glute bridge",
+  "Adductor","Abduttore","Abductor machine",
+  "Polpacci con ginocchio esteso","Calf raise in piedi",
+  "Calf raise seduto","Leg press calf raise","Donkey calf raise",
   // ── CORE (libero) ──
-  "Crunch","Crunch al cavo alto","Crunch inverso","Plank",
-  "Plank laterale","Russian twist","Leg raise","Hanging leg raise",
-  "Ab wheel","Mountain climber","Hollow body hold","Dead bug",
+  "Crunch","Crunch al cavo alto","Crunch inverso","Crunch obliquo",
+  "Plank","Plank laterale","Plank con elevazione gamba",
+  "Russian twist","Leg raise","Hanging leg raise",
+  "Hanging knee raise","Ab wheel","Mountain climber",
+  "Hollow body hold","Dead bug","Bird dog","Cable crunch",
+  "Pallof press","Rotary torso","Woodchop al cavo alto","Woodchop al cavo basso",
   // ── CARDIO ──
   "Cardio zona 3","Tapis roulant","Cyclette","Ellittica",
-  "Vogatore","Jumping rope","HIIT","Nuoto","StairClimber"
+  "Vogatore","Jumping rope","HIIT","Nuoto","StairClimber",
+  "Corsa outdoor","Camminata veloce","Corsa in salita"
 ].filter(function(v,i,a){ return a.indexOf(v)===i; }); // rimuove duplicati
 
 const CARDIO_NAMES = ["Cardio zona 3","Tapis roulant","Cyclette","Ellittica","Vogatore","Jumping rope","HIIT","Nuoto"];
