@@ -1318,7 +1318,7 @@ function startSession(name,savedStart,savedSets,savedExercises){
     sessionExercises.forEach(function(ex,ei){setsState[ei]=initSets(ex);});
   }
   document.getElementById("btn-back").style.color=data.color;
-  document.getElementById("btn-end").style.background=data.color;
+  // btn-end background set in updateStartStopUI
   document.getElementById("session-title").textContent=name;
   document.getElementById("cd-startstop").style.background=data.color;
   sessionStarted = !!savedStart; // se è una ripresa, il timer era già avviato
@@ -1351,13 +1351,14 @@ function updateStartStopUI(){
   var warn = document.getElementById("session-screen-warn");
   if(sessionStarted){
     if(startRow) startRow.style.display = "none";
-    if(btnEnd) btnEnd.style.display = "";
+    var endColor = (loadWorkouts()[currentWorkout]||BASE_WORKOUTS[currentWorkout]||{color:'#FF3B30'}).color;
+    if(btnEnd){ btnEnd.style.display = "inline-block"; btnEnd.style.visibility = "visible"; btnEnd.style.background = endColor; }
     if(warn) warn.style.display = "block";
   } else {
     if(startRow) startRow.style.display = "block";
     var btn = document.getElementById("btn-start-session");
     if(btn) btn.style.background = color;
-    if(btnEnd) btnEnd.style.display = "none";
+    if(btnEnd){ btnEnd.style.display = "none"; btnEnd.style.visibility = "hidden"; }
     if(timerDisplay) timerDisplay.textContent = "";
     if(warn) warn.style.display = "none";
   }
