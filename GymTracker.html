@@ -391,7 +391,7 @@ const BASE_WORKOUTS = {
   Upper: { color:"#AF52DE", icon:"◈", exercises:[
     "Panca inclinata con bilanciere","Pectoral machine","Rematore con manubri panca 30°",
     "Lat machine presa prona (stretta)","Alzate laterali con manubri su panca",
-    "Curl panca Scott bilanciere EZ","Push down con barre","Cardio zona 3"
+    "Curl panca Scott bilanciere EZ","Push down con barra","Cardio zona 3"
   ]}
 };
 
@@ -459,7 +459,7 @@ const ALL_EXERCISES = [
   "Upright row al cavo","Rear delt fly con manubri",
   "Rear delt fly ai cavi","Rear delt machine",
   // ── TRICIPITI (libero) ──
-  "Push down con barra","Push down con barre","Push down con corda",
+  "Push down con barra","Push down con corda",
   "Push down al cavo presa prona","Push down al cavo presa supina",
   "Distensioni dietro","Tricep overhead extension",
   "Skull crushers","JM press",
@@ -1632,6 +1632,31 @@ function toggleDone(ei,si){
   setsState[ei][si].done=!setsState[ei][si].done;
   reRenderExCard(ei);
   saveActive();
+  // Se tutte le serie sono completate, sposta in coda e scrolla al successivo
+  var sets = setsState[ei];
+  var allDone = sets && sets.length > 0 && sets.every(function(s){ return s.done; });
+  if(allDone && ei < sessionExercises.length - 1){
+    setTimeout(function(){
+      // Sposta in coda
+      var exName = sessionExercises.splice(ei, 1)[0];
+      var exSets = setsState[ei];
+      sessionExercises.push(exName);
+      // Ricostruisci setsState
+      var newState = {};
+      Object.keys(setsState).forEach(function(k){
+        var ki = parseInt(k);
+        if(ki < ei) newState[ki] = setsState[ki];
+        else if(ki > ei) newState[ki-1] = setsState[ki];
+      });
+      newState[sessionExercises.length-1] = exSets;
+      setsState = newState;
+      renderExercises();
+      saveActive();
+      // Scrolla al primo esercizio non completato
+      var nextCard = document.getElementById("ex-card-"+ei);
+      if(nextCard) setTimeout(function(){ nextCard.scrollIntoView({behavior:"smooth",block:"start"}); }, 150);
+    }, 500);
+  }
 }
 
 // ── ELIMINA ESERCIZIO ──────────────────────────────────────────────────────
@@ -2572,14 +2597,18 @@ var progFromSession = false;
 
 function openProg(exName){
   progFromSession = (document.getElementById("screen-session").classList.contains("active"));
+  progFromProgressioni = (currentHistTab === "progressioni" && document.getElementById("screen-history").classList.contains("active"));
   renderProg(exName);
   showScreen("progress");
 }
 
 function closeProg(){
   if(progFromSession) showScreen("session");
-  else showScreen("dashboard");
+  else if(progFromProgressioni){ showScreen("history"); switchHistTab("progressioni"); }
+  else showScreen("history");
 }
+
+var progFromProgressioni = false;
 
 function renderProg(exName){
   document.getElementById("prog-title").textContent = exName;
@@ -2961,7 +2990,7 @@ function injectUpper08Jun(){
         {reps:11, weight:"15",   done:true},
         {reps:11, weight:"15",   done:true}
       ]},
-      { name: "Push down con barre", sets: [
+      { name: "Push down con barra", sets: [
         {reps:11, weight:"17.5", done:true},
         {reps:12, weight:"15",   done:true},
         {reps:11, weight:"15",   done:true},
