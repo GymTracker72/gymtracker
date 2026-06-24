@@ -444,6 +444,31 @@ const SK_SESSION = "gym_active_v4";
 const SK_HISTORY = "gym_history_v2"; // stessa chiave per mantenere storico vecchio
 const SK_INSTALL = "gym_install_dismissed";
 const SK_WORKOUTS = "gym_workouts_v1"; // schede personalizzabili
+const SK_CUSTOM_EXERCISES = "gym_custom_exercises_v1"; // esercizi personalizzati
+
+function loadCustomExercises(){
+  try{ return JSON.parse(localStorage.getItem(SK_CUSTOM_EXERCISES)||"[]"); }catch(e){ return []; }
+}
+function saveCustomExercises(arr){
+  try{ localStorage.setItem(SK_CUSTOM_EXERCISES, JSON.stringify(arr)); }catch(e){}
+}
+function getAllExercises(){
+  var custom = loadCustomExercises();
+  var all = ALL_EXERCISES.concat(custom.filter(function(e){ return ALL_EXERCISES.indexOf(e)<0; }));
+  return all;
+}
+function renameExerciseGlobally(oldName, newName){
+  // Aggiorna in ALL_EXERCISES custom
+  var custom = loadCustomExercises();
+  var idx = custom.indexOf(oldName);
+  if(idx>=0){ custom[idx]=newName; saveCustomExercises(custom); }
+  // Aggiorna in tutte le schede
+  var w = loadWorkouts();
+  Object.keys(w).forEach(function(wname){
+    w[wname].exercises = w[wname].exercises.map(function(e){ return e===oldName?newName:e; });
+  });
+  saveWorkouts(w);
+}
 
 // ── COLORI E ICONE DISPONIBILI ────────────────────────────────────────────
 const AVAILABLE_COLORS = ["#FF6B35","#007AFF","#34C759","#AF52DE","#FF9500","#FF2D55","#5AC8FA","#4CD964","#FF3B30","#8E8E93"];
@@ -453,9 +478,15 @@ const AVAILABLE_ICONS  = ["↑","↓","⬇","◈","★","◆","●","▲","⬆",
 function loadWorkouts(){
   try{
     var saved = JSON.parse(localStorage.getItem(SK_WORKOUTS)||"null");
-    if(saved && typeof saved==="object" && Object.keys(saved).length>0) return saved;
+    if(saved && typeof saved==="object" && Object.keys(saved).length>0){
+      // Assicura che le schede default esistano sempre se non sono state eliminate intenzionalmente
+      return saved;
+    }
   }catch(e){}
-  return JSON.parse(JSON.stringify(BASE_WORKOUTS)); // deep copy
+  // Prima volta: inizializza localStorage con le schede di default e salvale subito
+  var defaults = JSON.parse(JSON.stringify(BASE_WORKOUTS));
+  try{ localStorage.setItem(SK_WORKOUTS, JSON.stringify(defaults)); }catch(e){}
+  return defaults;
 }
 function saveWorkouts(w){
   try{
@@ -582,7 +613,7 @@ function renderEditWorkoutScreen(name, data){
   // Aggiungi esercizio
   var addBtn = document.createElement("button");
   addBtn.style.cssText = "width:100%;background:none;border:2px dashed #d1d1d6;border-radius:14px;padding:14px;font-size:17px;color:#8e8e93;cursor:pointer;font-family:inherit;margin-top:4px;margin-bottom:20px;";
-  addBtn.textContent = "＋ Aggiungi esercizio";
+  addBtn.textContent = "\uFF0B Aggiungi esercizio";
   addBtn.onclick = openAddExToWorkout;
   body.appendChild(addBtn);
 
@@ -642,32 +673,96 @@ function openAddExToWorkout(){
   title.style.cssText = "font-size:20px;font-weight:700;color:#1c1c1e;margin-bottom:12px;";
   title.textContent = "Aggiungi esercizio";
   var search = document.createElement("input");
-  search.type = "text"; search.placeholder = "Cerca...";
+  search.type = "text"; search.placeholder = "Cerca o crea...";
   search.style.cssText = "width:100%;border:2px solid #e5e5ea;border-radius:12px;padding:12px;font-size:17px;font-family:inherit;outline:none;margin-bottom:12px;background:#fafafa;";
   var exListEl = document.createElement("div");
   exListEl.id = "ew-addex-list";
 
   function fillList(q){
     exListEl.innerHTML = "";
-    ALL_EXERCISES.filter(function(e){ return !q||e.toLowerCase().indexOf(q.toLowerCase())>=0; })
+    var customList = loadCustomExercises();
+
+    // Crea nuovo esercizio
+    if(q && q.trim()){
+      var qTrim = q.trim();
+      var exists = getAllExercises().some(function(e){ return e.toLowerCase()===qTrim.toLowerCase(); });
+      if(!exists){
+        var createRow = document.createElement("div");
+        createRow.style.cssText = "padding:13px 10px;border-bottom:2px solid #e5e5ea;display:flex;justify-content:space-between;align-items:center;font-size:17px;cursor:pointer;color:#34C759;font-weight:600;";
+        createRow.textContent = '+ Crea "' + qTrim + '"';
+        createRow.onclick = function(){
+          var newEx = qTrim;
+          var custom = loadCustomExercises();
+          if(custom.indexOf(newEx)<0 && ALL_EXERCISES.indexOf(newEx)<0){
+            custom.push(newEx);
+            saveCustomExercises(custom);
+          }
+          editingWorkoutExercises.push(newEx);
+          renderEWExercises();
+          overlay.remove();
+          ewAddExOverlay = null;
+        };
+        exListEl.appendChild(createRow);
+      }
+    }
+
+    getAllExercises().filter(function(e){ return !q || e.toLowerCase().indexOf(q.toLowerCase())>=0; })
     .forEach(function(ex){
       var already = editingWorkoutExercises.indexOf(ex)>=0;
+      var isCustom = customList.indexOf(ex)>=0;
       var item = document.createElement("div");
-      item.style.cssText = "padding:13px 10px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;font-size:17px;cursor:pointer;"+(already?"color:#c7c7cc;":"color:#1c1c1e;");
-      var span = document.createElement("span");
-      span.style.cssText = "font-size:22px;color:"+(already?"#d1d1d6":"#34C759");
-      span.textContent = already ? "✓" : "+";
-      item.textContent = ex;
-      item.appendChild(span);
-      if(!already){ (function(n){item.onclick=function(){
-        editingWorkoutExercises.push(n);
-        renderEWExercises();
-        overlay.remove();
-        ewAddExOverlay = null;
-      };})(ex); }
+      item.style.cssText = "padding:13px 10px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;font-size:17px;"+(already?"color:#c7c7cc;":"color:#1c1c1e;cursor:pointer;");
+
+      var left = document.createElement("div");
+      left.style.flex = "1";
+      var nameText = document.createTextNode(ex);
+      left.appendChild(nameText);
+      if(isCustom){
+        var badge = document.createElement("span");
+        badge.style.cssText = "font-size:11px;background:#f2f2f7;color:#8e8e93;border-radius:6px;padding:2px 6px;margin-left:8px;";
+        badge.textContent = "custom";
+        left.appendChild(badge);
+      }
+
+      var right = document.createElement("div");
+      right.style.cssText = "display:flex;align-items:center;gap:8px;";
+
+      if(isCustom && !already){
+        var renBtn = document.createElement("button");
+        renBtn.style.cssText = "background:none;border:none;font-size:15px;cursor:pointer;padding:2px 4px;color:#8e8e93;";
+        renBtn.textContent = "[ren]";
+        (function(n){ renBtn.onclick = function(e){
+          e.stopPropagation();
+          var newName = prompt("Nuovo nome per: " + n, n);
+          if(!newName || !newName.trim()) return;
+          newName = newName.trim();
+          if(getAllExercises().indexOf(newName)>=0 && newName!==n){
+            alert("Esiste gia un esercizio con questo nome."); return;
+          }
+          renameExerciseGlobally(n, newName);
+          fillList(search.value);
+        }; })(ex);
+        right.appendChild(renBtn);
+      }
+
+      var plus = document.createElement("span");
+      plus.style.cssText = "font-size:22px;color:"+(already?"#d1d1d6":"#34C759");
+      plus.textContent = already ? "v" : "+";
+      right.appendChild(plus);
+
+      item.appendChild(left); item.appendChild(right);
+      if(!already){
+        (function(n){ item.onclick = function(){
+          editingWorkoutExercises.push(n);
+          renderEWExercises();
+          overlay.remove();
+          ewAddExOverlay = null;
+        }; })(ex);
+      }
       exListEl.appendChild(item);
     });
   }
+
   search.oninput = function(){ fillList(this.value); };
   fillList("");
 
@@ -682,7 +777,6 @@ function openAddExToWorkout(){
   ewAddExOverlay = overlay;
   setTimeout(function(){search.focus();},300);
 }
-
 function saveEditWorkout(){
   var nameInp = document.getElementById("ew-name");
   var newName = nameInp ? nameInp.value.trim() : "";
@@ -805,7 +899,7 @@ function updateDriveUI(connected){
   var ind = document.getElementById("drive-sync-indicator");
   if(bar) bar.style.display = "flex";
   if(connected){
-    if(btn){ btn.textContent="✓ Drive connesso"; btn.classList.add("connected"); }
+    if(btn){ btn.textContent="\u2713 Drive connesso"; btn.classList.add("connected"); }
     if(status) status.textContent = "Sincronizzato con Google Drive";
     if(ind) ind.className = "ok";
   } else {
@@ -1096,6 +1190,8 @@ function renderDashboard(){
   var order = getWorkoutOrder(history);
 
   var currentWorkouts = loadWorkouts();
+  // Assicura che tutte le schede nell'ordine esistano ancora
+  order = order.filter(function(n){ return currentWorkouts[n]; });
   order.forEach(function(name, idx){
     var data=currentWorkouts[name];
     if(!data || typeof data !== 'object') return;
@@ -1106,6 +1202,7 @@ function renderDashboard(){
 
     var wrap=document.createElement("div");
     wrap.className="wcard-wrap";
+    wrap.style.cssText="position:relative;";
 
     var card=document.createElement("button");
     card.className="workout-card";
@@ -1115,14 +1212,18 @@ function renderDashboard(){
       '<div class="wname">'+name+'</div>'+
       '<div class="wcount">'+data.exercises.length+' esercizi</div>'+
       (last?'<div class="wlast" style="color:'+data.color+'">Ultima: '+fmtDateShort(last.date)+'</div>':'<div class="wlast" style="color:#8e8e93">Mai fatta</div>');
-    card.onclick=function(){startSession(name);};
+    (function(n){card.onclick=function(e){
+      // Ignora se il click viene dai bottoni sovrapposti
+      if(e.target && e.target.closest && e.target.closest('.wcard-move-col')) return;
+      startSession(n);
+    };})(name);
 
     var moveCol=document.createElement("div");
     moveCol.className="wcard-move-col";
     // Tasto modifica scheda
     var editBtn=document.createElement("button");
     editBtn.className="wcard-move-btn";
-    editBtn.textContent="✏️"; editBtn.title="Modifica scheda";
+    editBtn.textContent="\u270F"; editBtn.title="Modifica scheda";
     editBtn.style.cssText="background:rgba(255,255,255,.95);border:none;border-radius:8px;width:28px;height:24px;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:0 1px 3px rgba(0,0,0,.15);";
     (function(n){editBtn.onclick=function(e){e.stopPropagation();openEditWorkout(n);};})(name);
     var leftBtn=document.createElement("button");
@@ -1178,6 +1279,13 @@ function startSession(name,savedStart,savedSets,savedExercises){
   currentWorkout=name;
   sessionStart=savedStart?new Date(savedStart):new Date();
   var data=loadWorkouts()[name]||BASE_WORKOUTS[name];
+  if(!data){
+    alert("Errore: scheda \""+name+"\" non trovata. Ricarica l'app.");
+    return;
+  }
+  if(!data.color) data.color="#007AFF";
+  if(!data.icon) data.icon="●";
+  if(!data.exercises) data.exercises=[];
   sessionExercises=savedExercises?savedExercises:[].concat(data.exercises);
   if(savedSets){
     setsState=savedSets;
@@ -1230,7 +1338,7 @@ function renderExercises(){
   });
   var addRow=document.createElement("div");
   addRow.className="add-ex-row";
-  addRow.innerHTML='<button class="add-ex-btn" onclick="openAddEx()">＋ Aggiungi esercizio</button>';
+  addRow.innerHTML='<button class="add-ex-btn" onclick="openAddEx()">\uFF0B Aggiungi esercizio</button>';
   list.appendChild(addRow);
 }
 
@@ -1312,7 +1420,7 @@ function buildExCard(ex,ei){
 
     var doneBtn=document.createElement("button");
     doneBtn.className="btn-done"+(sets[0]&&sets[0].done?" checked":"");
-    doneBtn.id="btn-done-"+ei+"-0"; doneBtn.textContent="✓";
+    doneBtn.id="btn-done-"+ei+"-0"; doneBtn.textContent="\u2713";
     doneBtn.style.cssText="width:60px;height:60px;border-radius:50%;border:none;font-size:26px;cursor:pointer;margin:12px auto;display:block;background:"+(sets[0]&&sets[0].done?color:"#e5e5ea")+";color:"+(sets[0]&&sets[0].done?"#fff":"#8e8e93")+";";
     (function(i){doneBtn.onclick=function(){toggleDone(i,0);};})(ei);
 
@@ -1362,7 +1470,7 @@ function buildSetRow(ex,ei,si,s,color){
   // Done
   var doneBtn=document.createElement("button");
   doneBtn.className="btn-done"+(s.done?" checked":"");
-  doneBtn.id="btn-done-"+ei+"-"+si; doneBtn.textContent="✓";
+  doneBtn.id="btn-done-"+ei+"-"+si; doneBtn.textContent="\u2713";
   doneBtn.style.background=s.done?color:"#e5e5ea";
   doneBtn.style.color=s.done?"#fff":"#8e8e93";
   (function(i,j){doneBtn.onclick=function(){toggleDone(i,j);};})(ei,si);
@@ -1449,18 +1557,71 @@ function openAddEx(){
 function closeAddEx(){ document.getElementById("addex-overlay").classList.remove("open"); }
 function filterAddEx(query){
   var q=query.toLowerCase().trim();
-  var filtered=ALL_EXERCISES.filter(function(e){return !q||e.toLowerCase().indexOf(q)>=0;});
   var container=document.getElementById("addex-list");
   container.innerHTML="";
+  var customList = loadCustomExercises();
+
+  // Crea nuovo esercizio se la ricerca non trova match esatti
+  if(q){
+    var exists = getAllExercises().some(function(e){ return e.toLowerCase()===q; });
+    if(!exists){
+      var createRow=document.createElement("div");
+      createRow.className="addex-item";
+      createRow.style.cssText="color:#34C759;font-weight:600;border-bottom:2px solid #e5e5ea;";
+      var plusEl=document.createElement("span"); plusEl.className="addex-plus"; plusEl.textContent="\u271A";
+      createRow.appendChild(document.createTextNode('\uFF0B Crea "'+query.trim()+'"'));
+      createRow.appendChild(plusEl);
+      createRow.onclick=function(){
+        var newEx=query.trim();
+        var custom=loadCustomExercises();
+        if(custom.indexOf(newEx)<0 && ALL_EXERCISES.indexOf(newEx)<0){
+          custom.push(newEx); saveCustomExercises(custom);
+        }
+        addExercise(newEx);
+      };
+      container.appendChild(createRow);
+    }
+  }
+
+  var filtered=getAllExercises().filter(function(e){return !q||e.toLowerCase().indexOf(q)>=0;});
   filtered.forEach(function(ex){
     var already=sessionExercises.indexOf(ex)>=0;
+    var isCustom=customList.indexOf(ex)>=0;
     var item=document.createElement("div");
     item.className="addex-item"+(already?" already":"");
+    item.style.display="flex"; item.style.alignItems="center";
+
+    var nameWrap=document.createElement("span"); nameWrap.style.flex="1";
+    nameWrap.textContent=ex;
+    if(isCustom){
+      var badge=document.createElement("span");
+      badge.style.cssText="font-size:11px;background:#f2f2f7;color:#8e8e93;border-radius:6px;padding:2px 6px;margin-left:6px;";
+      badge.textContent="custom"; nameWrap.appendChild(badge);
+    }
+    item.appendChild(nameWrap);
+
+    if(isCustom && !already){
+      var renBtn=document.createElement("button");
+      renBtn.style.cssText="background:none;border:none;font-size:16px;cursor:pointer;padding:2px 6px;color:#8e8e93;";
+      renBtn.textContent="\u270F";
+      (function(n){renBtn.onclick=function(e){
+        e.stopPropagation();
+        var newName=prompt("Nuovo nome per: "+n, n);
+        if(!newName||!newName.trim()) return;
+        newName=newName.trim();
+        if(getAllExercises().indexOf(newName)>=0 && newName!==n){
+          alert("Esiste già un esercizio con questo nome."); return;
+        }
+        renameExerciseGlobally(n,newName);
+        filterAddEx(document.getElementById("addex-search").value||"");
+      };})(ex);
+      item.appendChild(renBtn);
+    }
+
     var plus=document.createElement("span"); plus.className="addex-plus";
-    plus.textContent=already?"✓":"+";
-    item.appendChild(document.createTextNode(ex));
+    plus.textContent=already?"\u2713":"+";
     item.appendChild(plus);
-    if(!already) item.onclick=function(){addExercise(ex);};
+    if(!already){(function(n){item.onclick=function(){addExercise(n);};})(ex);}
     container.appendChild(item);
   });
 }
@@ -1666,7 +1827,7 @@ function renderSummary(s){
   lastSession = s;
   var data=BASE_WORKOUTS[s.workout];
   var icon=document.getElementById("summary-icon");
-  icon.style.background=data.color+"20"; icon.style.color=data.color; icon.textContent="✓";
+  icon.style.background=data.color+"20"; icon.style.color=data.color; icon.textContent="\u2713";
   document.getElementById("summary-workout-name").textContent=s.workout;
   document.getElementById("btn-home").style.background=data.color;
 
@@ -1687,7 +1848,7 @@ function renderSummary(s){
   var fineRight=document.createElement("div"); fineRight.style.cssText="display:flex;align-items:center;gap:8px;";
   var fineVal=document.createElement("span"); fineVal.className="sval"; fineVal.id="summary-fine-val"; fineVal.textContent=s.endTime;
   var fineEdit=document.createElement("button");
-  fineEdit.textContent="✏️"; fineEdit.style.cssText="background:none;border:none;font-size:18px;cursor:pointer;padding:0;";
+  fineEdit.textContent="\u270F"; fineEdit.style.cssText="background:none;border:none;font-size:18px;cursor:pointer;padding:0;";
   fineEdit.onclick=function(){ openEditEndTime(); };
   fineRight.appendChild(fineVal); fineRight.appendChild(fineEdit);
   fineRow.appendChild(fineLabel); fineRow.appendChild(fineRight);
@@ -1820,7 +1981,7 @@ function buildHistEntry(s,origIdx){
       exName.style.cssText="font-size:16px;font-weight:700;color:#1c1c1e;";
       exName.textContent=ex.name;
       var editExBtn=document.createElement("button");
-      editExBtn.textContent="✏️";
+      editExBtn.textContent="\u270F";
       editExBtn.style.cssText="background:none;border:none;font-size:18px;cursor:pointer;padding:2px 4px;";
       editExBtn.title="Modifica esercizio";
       (function(oi,ei){ editExBtn.onclick=function(){ openEditExScreen(oi,ei); }; })(origIdx,exIdx);
@@ -1834,9 +1995,9 @@ function buildHistEntry(s,origIdx){
         lbl.textContent=CARDIO_NAMES.indexOf(ex.name)>=0?"Cardio":"Serie "+(si+1);
         var val=document.createElement("span"); val.style.cssText="font-size:15px;font-weight:600;color:#1c1c1e;";
         if(CARDIO_NAMES.indexOf(ex.name)>=0){
-          val.textContent=(set.cardioMin||"—")+" min"+(set.done?" ✓":"");
+          val.textContent=(set.cardioMin||"—")+" min"+(set.done?" \u2713":"");
         } else {
-          val.textContent=(set.reps||"—")+" rip  ·  "+(set.weight?set.weight+"kg":"—")+(set.done?" ✓":"");
+          val.textContent=(set.reps||"—")+" rip  ·  "+(set.weight?set.weight+"kg":"—")+(set.done?" \u2713":"");
         }
         setRow.appendChild(lbl); setRow.appendChild(val); exWrap.appendChild(setRow);
       });
@@ -1846,7 +2007,7 @@ function buildHistEntry(s,origIdx){
   // Modifica ora fine
   var editBtn=document.createElement("button"); editBtn.className="hist-delete-btn";
   editBtn.style.cssText="width:100%;margin-top:12px;padding:13px;background:#f0f6ff;color:#007AFF;border:1.5px solid #007AFF30;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;font-family:inherit;";
-  editBtn.textContent="✏️  Modifica ora di fine";
+  editBtn.textContent="\u270F  Modifica ora di fine";
   (function(i){editBtn.onclick=function(){askEditHistEndTime(i);};})(origIdx);
   detail.appendChild(editBtn);
 
@@ -2011,7 +2172,7 @@ function openEditExScreen(sessionIdx, exIdx){
 
     // Aggiungi serie
     var addBtn = document.createElement("button");
-    addBtn.textContent = "＋ Aggiungi serie";
+    addBtn.textContent = "\uFF0B Aggiungi serie";
     addBtn.style.cssText = "width:100%;background:none;border:2px dashed #d1d1d6;border-radius:14px;padding:14px;font-size:17px;color:#8e8e93;cursor:pointer;font-family:inherit;margin-top:4px;";
     addBtn.onclick = function(){
       var h2 = loadHistory();
@@ -2491,9 +2652,24 @@ function injectUpper08Jun(){
 
 // ── INIT ───────────────────────────────────────────────────────────────────
 
+// Inizializza schede nel localStorage se è la prima apertura
+loadWorkouts();
+
 updateCDDisplay(cdRemaining,false);
 checkInstallBanner();
 renderDashboard();
+
+// Se c'era una sessione attiva, mostra il banner (già gestito in renderDashboard)
+// Se c'era una sessione salvata nell'active storage, ripristina i dati dell'ultima volta
+(function(){
+  var active = loadActive();
+  if(active && active.setsState){
+    // I dati sono già nel localStorage tramite saveActive()
+    // Non serve fare nulla — renderDashboard mostra già il banner "Sessione in corso"
+  }
+})();
+
+if(getDriveToken()){ updateDriveUI(true); driveLoadHistory(); driveLoadWorkouts(); }
 </script>
 </body>
 </html>
