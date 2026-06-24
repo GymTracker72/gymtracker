@@ -2143,9 +2143,22 @@ function openEditExScreen(sessionIdx, exIdx){
   var ex = s.exercises[exIdx];
   var isCardio = CARDIO_NAMES.indexOf(ex.name) >= 0;
 
-  document.getElementById("edit-ex-title").textContent = ex.name;
+  document.getElementById("edit-ex-title").textContent = "Modifica: " + ex.name;
   var body = document.getElementById("edit-ex-body");
   body.innerHTML = "";
+
+  // Campo rinomina esercizio (sempre presente)
+  var nameCard = document.createElement("div");
+  nameCard.style.cssText = "background:#fff;border-radius:18px;padding:18px;box-shadow:0 1px 5px rgba(0,0,0,.08);margin-bottom:14px;";
+  var nameLbl = document.createElement("div");
+  nameLbl.style.cssText = "font-size:14px;color:#8e8e93;font-weight:600;text-transform:uppercase;margin-bottom:10px;";
+  nameLbl.textContent = "Nome esercizio";
+  var nameInp = document.createElement("input");
+  nameInp.type = "text"; nameInp.id = "edit-ex-name";
+  nameInp.value = ex.name;
+  nameInp.style.cssText = "width:100%;border:2px solid #e5e5ea;border-radius:12px;padding:13px;font-size:18px;font-family:inherit;outline:none;background:#fafafa;color:#1c1c1e;";
+  nameCard.appendChild(nameLbl); nameCard.appendChild(nameInp);
+  body.appendChild(nameCard);
 
   if(isCardio){
     // Cardio: solo campo minuti
@@ -2251,6 +2264,12 @@ function saveEditEx(){
   var h = loadHistory();
   var ex = h[editExSessionIdx].exercises[editExIdx];
   var isCardio = CARDIO_NAMES.indexOf(ex.name) >= 0;
+
+  // Salva nome esercizio se modificato
+  var nameInp = document.getElementById("edit-ex-name");
+  if(nameInp && nameInp.value.trim() && nameInp.value.trim() !== ex.name){
+    ex.name = nameInp.value.trim();
+  }
 
   if(isCardio){
     var minInp = document.getElementById("edit-cardio-min");
