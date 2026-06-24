@@ -1850,6 +1850,12 @@ function toggleCD(){
   startCD();
 }
 
+function askEnd(){
+  var elapsed = Date.now() - (sessionStart ? sessionStart.getTime() : Date.now());
+  var color = (loadWorkouts()[currentWorkout]||BASE_WORKOUTS[currentWorkout]||{color:'#007AFF'}).color;
+  showModal("Termina allenamento?","Durata: "+fmtDur(elapsed)+". I dati verranno salvati.",
+    color,"Si\u0300, termina",endSession);
+}
 function askBack(){
   showModal("Tornare alla home?","La sessione rimane attiva, potrai riprenderla.",
     "#007AFF","Sì, vai alla home",function(){closeModal();clearInterval(timerInterval);stopCD();goHome();});
