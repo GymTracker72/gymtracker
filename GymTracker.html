@@ -95,7 +95,7 @@ button { font-family: inherit; }
 .add-ex-btn:active { background: #f2f2f7; }
 
 /* MODALS */
-#modal-overlay, #addex-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); display: none; align-items: flex-end; z-index: 100; }
+#modal-overlay, #addex-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); display: none; align-items: flex-end; z-index: 1000; }
 #modal-overlay.open, #addex-overlay.open { display: flex; }
 #modal-box, #addex-box { width: 100%; background: #fff; border-radius: 24px 24px 0 0; padding: 28px 22px max(env(safe-area-inset-bottom),28px); animation: slideUp .22s ease; }
 #addex-box { max-height: 80vh; overflow-y: auto; padding-top: 22px; }
@@ -1263,7 +1263,7 @@ function renderDashboard(){
   histSection.innerHTML='<div class="section-label">Sessioni recenti</div><div id="history-list"></div>';
   var list=document.getElementById("history-list");
   recent.forEach(function(s){
-    var w=BASE_WORKOUTS[s.workout]||{color:"#8e8e93",icon:"●"};
+    var w=loadWorkouts()[s.workout]||BASE_WORKOUTS[s.workout]||{color:"#8e8e93",icon:"●"};
     var item=document.createElement("div");
     item.className="history-item";
     item.innerHTML='<div class="history-icon" style="background:'+w.color+'20;color:'+w.color+'">'+w.icon+'</div>'+
@@ -1825,7 +1825,7 @@ var lastSession = null;
 
 function renderSummary(s){
   lastSession = s;
-  var data=BASE_WORKOUTS[s.workout];
+  var data=loadWorkouts()[s.workout]||BASE_WORKOUTS[s.workout]||{color:"#007AFF",icon:"●"};
   var icon=document.getElementById("summary-icon");
   icon.style.background=data.color+"20"; icon.style.color=data.color; icon.textContent="\u2713";
   document.getElementById("summary-workout-name").textContent=s.workout;
