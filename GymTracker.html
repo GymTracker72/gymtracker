@@ -1566,7 +1566,20 @@ function buildSetRow(ex,ei,si,s,color){
   doneBtn.style.color=s.done?"#fff":"#8e8e93";
   (function(i,j){doneBtn.onclick=function(){toggleDone(i,j);};})(ei,si);
 
-  row.appendChild(num); row.appendChild(repsField); row.appendChild(wField); row.appendChild(doneBtn);
+  // Delete set button
+  var delBtn=document.createElement("button");
+  delBtn.style.cssText="background:none;border:none;color:#ff3b30;font-size:18px;cursor:pointer;padding:4px 2px;flex-shrink:0;";
+  delBtn.textContent="\u2715";
+  delBtn.title="Elimina serie";
+  (function(i,j){delBtn.onclick=function(e){
+    e.stopPropagation();
+    if(setsState[i] && setsState[i].length <= 1){ alert("Non puoi eliminare l'unica serie."); return; }
+    setsState[i].splice(j,1);
+    reRenderExCard(i);
+    saveActive();
+  };})(ei,si);
+
+  row.appendChild(num); row.appendChild(repsField); row.appendChild(wField); row.appendChild(doneBtn); row.appendChild(delBtn);
   return row;
 }
 
@@ -2259,10 +2272,27 @@ function openEditExScreen(sessionIdx, exIdx){
       var card = document.createElement("div");
       card.style.cssText = "background:#fff;border-radius:18px;padding:18px;box-shadow:0 1px 5px rgba(0,0,0,.08);margin-bottom:12px;";
 
+      // Header serie con tasto elimina
+      var serieHeader = document.createElement("div");
+      serieHeader.style.cssText = "display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;";
       var serieTitle = document.createElement("div");
-      serieTitle.style.cssText = "font-size:17px;font-weight:700;color:#1c1c1e;margin-bottom:14px;";
+      serieTitle.style.cssText = "font-size:17px;font-weight:700;color:#1c1c1e;";
       serieTitle.textContent = "Serie " + (si+1);
-      card.appendChild(serieTitle);
+      var delSerieBtn = document.createElement("button");
+      delSerieBtn.textContent = "Elimina serie";
+      delSerieBtn.style.cssText = "background:none;border:none;color:#ff3b30;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;padding:4px 0;";
+      (function(sIdx){
+        delSerieBtn.onclick = function(){
+          if(!confirm("Eliminare la serie " + (sIdx+1) + "?")) return;
+          var h2 = loadHistory();
+          h2[editExSessionIdx].exercises[editExIdx].sets.splice(sIdx, 1);
+          saveHistory(h2);
+          openEditExScreen(editExSessionIdx, editExIdx);
+        };
+      })(si);
+      serieHeader.appendChild(serieTitle);
+      serieHeader.appendChild(delSerieBtn);
+      card.appendChild(serieHeader);
 
       // Ripetizioni
       var rRow = document.createElement("div");
@@ -2273,7 +2303,7 @@ function openEditExScreen(sessionIdx, exIdx){
       var rSel = document.createElement("select");
       rSel.id = "edit-reps-"+si;
       rSel.style.cssText = "flex:1;border:2px solid #e5e5ea;border-radius:10px;padding:10px;font-size:20px;font-family:inherit;background:#fafafa;color:#1c1c1e;outline:none;text-align:center;";
-      for(var r=REPS_MIN; r<=REPS_MAX; r++){
+      for(var r=1; r<=30; r++){
         var opt = document.createElement("option");
         opt.value = r; opt.textContent = r;
         if(r === (set.reps||REPS_DEF)) opt.selected = true;
@@ -2316,7 +2346,7 @@ function openEditExScreen(sessionIdx, exIdx){
     // Aggiungi serie
     var addBtn = document.createElement("button");
     addBtn.textContent = "\uFF0B Aggiungi serie";
-    addBtn.style.cssText = "width:100%;background:none;border:2px dashed #d1d1d6;border-radius:14px;padding:14px;font-size:17px;color:#8e8e93;cursor:pointer;font-family:inherit;margin-top:4px;";
+    addBtn.style.cssText = "width:100%;background:none;border:2px dashed #d1d1d6;border-radius:14px;padding:14px;font-size:17px;color:#8e8e93;cursor:pointer;font-family:inherit;margin-top:4px;margin-bottom:12px;";
     addBtn.onclick = function(){
       var h2 = loadHistory();
       var ex2 = h2[editExSessionIdx].exercises[editExIdx];
@@ -2325,6 +2355,19 @@ function openEditExScreen(sessionIdx, exIdx){
       openEditExScreen(editExSessionIdx, editExIdx);
     };
     body.appendChild(addBtn);
+
+    // Elimina intero esercizio
+    var delExBtn = document.createElement("button");
+    delExBtn.textContent = "🗑  Elimina esercizio";
+    delExBtn.style.cssText = "width:100%;padding:15px;background:#fff0f0;color:#ff3b30;border:1.5px solid rgba(255,59,48,.2);border-radius:14px;font-size:17px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:8px;";
+    delExBtn.onclick = function(){
+      if(!confirm("Eliminare questo esercizio dalla sessione?")) return;
+      var h2 = loadHistory();
+      h2[editExSessionIdx].exercises.splice(editExIdx, 1);
+      saveHistory(h2);
+      closeEditExScreen();
+    };
+    body.appendChild(delExBtn);
   }
 
   showScreen("edit-ex");
