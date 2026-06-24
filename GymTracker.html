@@ -2147,17 +2147,51 @@ function openEditExScreen(sessionIdx, exIdx){
   var body = document.getElementById("edit-ex-body");
   body.innerHTML = "";
 
-  // Campo rinomina esercizio (sempre presente)
+  // Campo rinomina esercizio con picker dalla lista
   var nameCard = document.createElement("div");
   nameCard.style.cssText = "background:#fff;border-radius:18px;padding:18px;box-shadow:0 1px 5px rgba(0,0,0,.08);margin-bottom:14px;";
   var nameLbl = document.createElement("div");
   nameLbl.style.cssText = "font-size:14px;color:#8e8e93;font-weight:600;text-transform:uppercase;margin-bottom:10px;";
   nameLbl.textContent = "Nome esercizio";
-  var nameInp = document.createElement("input");
-  nameInp.type = "text"; nameInp.id = "edit-ex-name";
-  nameInp.value = ex.name;
-  nameInp.style.cssText = "width:100%;border:2px solid #e5e5ea;border-radius:12px;padding:13px;font-size:18px;font-family:inherit;outline:none;background:#fafafa;color:#1c1c1e;";
-  nameCard.appendChild(nameLbl); nameCard.appendChild(nameInp);
+  // Nome attuale
+  var curName = document.createElement("div");
+  curName.style.cssText = "font-size:17px;font-weight:700;color:#1c1c1e;margin-bottom:10px;padding:12px;background:#f2f2f7;border-radius:10px;";
+  curName.textContent = ex.name;
+  // Ricerca
+  var searchInp = document.createElement("input");
+  searchInp.type = "text"; searchInp.id = "edit-ex-name-search";
+  searchInp.placeholder = "Cerca nuovo nome...";
+  searchInp.style.cssText = "width:100%;border:2px solid #e5e5ea;border-radius:12px;padding:12px;font-size:16px;font-family:inherit;outline:none;background:#fafafa;color:#1c1c1e;margin-bottom:8px;";
+  // Lista risultati
+  var listEl = document.createElement("div");
+  listEl.id = "edit-ex-name-list";
+  listEl.style.cssText = "max-height:200px;overflow-y:auto;border:2px solid #e5e5ea;border-radius:12px;background:#fff;display:none;";
+
+  searchInp.oninput = function(){
+    var q = this.value.trim().toLowerCase();
+    listEl.innerHTML = "";
+    if(!q){ listEl.style.display="none"; return; }
+    var matches = getAllExercises().filter(function(e){ return e.toLowerCase().indexOf(q)>=0; });
+    if(!matches.length){ listEl.style.display="none"; return; }
+    matches.slice(0,20).forEach(function(exName){
+      var item = document.createElement("div");
+      item.style.cssText = "padding:12px 14px;border-bottom:1px solid #f0f0f0;font-size:16px;color:#1c1c1e;cursor:pointer;";
+      item.textContent = exName;
+      item.onclick = function(){
+        curName.textContent = exName;
+        curName.dataset.selected = exName;
+        searchInp.value = exName;
+        listEl.style.display = "none";
+      };
+      listEl.appendChild(item);
+    });
+    listEl.style.display = "block";
+  };
+
+  nameCard.appendChild(nameLbl);
+  nameCard.appendChild(curName);
+  nameCard.appendChild(searchInp);
+  nameCard.appendChild(listEl);
   body.appendChild(nameCard);
 
   if(isCardio){
@@ -2265,10 +2299,10 @@ function saveEditEx(){
   var ex = h[editExSessionIdx].exercises[editExIdx];
   var isCardio = CARDIO_NAMES.indexOf(ex.name) >= 0;
 
-  // Salva nome esercizio se modificato
-  var nameInp = document.getElementById("edit-ex-name");
-  if(nameInp && nameInp.value.trim() && nameInp.value.trim() !== ex.name){
-    ex.name = nameInp.value.trim();
+  // Salva nome esercizio se modificato tramite picker
+  var curNameEl = document.querySelector("#edit-ex-body [data-selected]");
+  if(curNameEl && curNameEl.dataset.selected && curNameEl.dataset.selected !== ex.name){
+    ex.name = curNameEl.dataset.selected;
   }
 
   if(isCardio){
