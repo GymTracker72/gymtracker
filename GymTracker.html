@@ -217,11 +217,30 @@ button { font-family: inherit; }
     <h2>Storico</h2>
     <button onclick="askClearAll()" style="background:none;border:none;color:#ff3b30;font-size:16px;font-weight:600;cursor:pointer;padding:0;font-family:inherit;">Cancella tutto</button>
   </div>
-  <div style="display:flex;gap:10px;padding:12px 16px 0;">
-    <button onclick="openExport()" style="flex:1;background:#f2f2f7;color:#007AFF;border:none;border-radius:14px;padding:13px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;">📤 Esporta</button>
-    <button onclick="openImport()" style="flex:1;background:#f2f2f7;color:#34C759;border:none;border-radius:14px;padding:13px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;">📥 Importa</button>
+  <!-- Tab bar: Sessioni / Progressioni -->
+  <div id="hist-tabs" style="display:flex;border-bottom:2px solid #f0f0f0;margin:0 16px;margin-top:12px;">
+    <button id="tab-sessioni" onclick="switchHistTab('sessioni')"
+      style="flex:1;background:none;border:none;border-bottom:3px solid #007AFF;padding:12px 0;font-size:16px;font-weight:700;color:#007AFF;cursor:pointer;font-family:inherit;margin-bottom:-2px;">Sessioni</button>
+    <button id="tab-progressioni" onclick="switchHistTab('progressioni')"
+      style="flex:1;background:none;border:none;border-bottom:3px solid transparent;padding:12px 0;font-size:16px;font-weight:700;color:#8e8e93;cursor:pointer;font-family:inherit;margin-bottom:-2px;">Progressioni</button>
   </div>
-  <div id="hist-body"></div>
+
+  <!-- Tab Sessioni -->
+  <div id="hist-tab-sessioni">
+    <div style="display:flex;gap:10px;padding:12px 16px 0;">
+      <button onclick="openExport()" style="flex:1;background:#f2f2f7;color:#007AFF;border:none;border-radius:14px;padding:13px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;">📤 Esporta</button>
+      <button onclick="openImport()" style="flex:1;background:#f2f2f7;color:#34C759;border:none;border-radius:14px;padding:13px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;">📥 Importa</button>
+    </div>
+    <div id="hist-body"></div>
+  </div>
+
+  <!-- Tab Progressioni -->
+  <div id="hist-tab-progressioni" style="display:none;padding:16px;">
+    <input id="prog-search" type="text" placeholder="Cerca esercizio..."
+      oninput="renderAllProgress(this.value)"
+      style="width:100%;border:2px solid #e5e5ea;border-radius:14px;padding:13px;font-size:17px;font-family:inherit;outline:none;background:#fafafa;color:#1c1c1e;margin-bottom:16px;">
+    <div id="prog-all-list"></div>
+  </div>
 </div>
 
 <!-- PROGRESSIONI SCREEN -->
@@ -2017,7 +2036,123 @@ function openEditEndTime(){
 }
 
 // ── STORICO ────────────────────────────────────────────────────────────────
-function openHistory(){ renderHistory(); showScreen("history"); }
+function openHistory(){ renderHistory(); showScreen("history"); switchHistTab("sessioni"); }
+
+var currentHistTab = "sessioni";
+function switchHistTab(tab){
+  currentHistTab = tab;
+  var tabSess = document.getElementById("hist-tab-sessioni");
+  var tabProg = document.getElementById("hist-tab-progressioni");
+  var btnSess = document.getElementById("tab-sessioni");
+  var btnProg = document.getElementById("tab-progressioni");
+  if(tab === "sessioni"){
+    if(tabSess) tabSess.style.display = "block";
+    if(tabProg) tabProg.style.display = "none";
+    if(btnSess){ btnSess.style.borderBottomColor="#007AFF"; btnSess.style.color="#007AFF"; btnSess.style.fontWeight="700"; }
+    if(btnProg){ btnProg.style.borderBottomColor="transparent"; btnProg.style.color="#8e8e93"; btnProg.style.fontWeight="700"; }
+  } else {
+    if(tabSess) tabSess.style.display = "none";
+    if(tabProg) tabProg.style.display = "block";
+    if(btnProg){ btnProg.style.borderBottomColor="#007AFF"; btnProg.style.color="#007AFF"; }
+    if(btnSess){ btnSess.style.borderBottomColor="transparent"; btnSess.style.color="#8e8e93"; }
+    renderAllProgress("");
+  }
+}
+
+function renderAllProgress(query){
+  var container = document.getElementById("prog-all-list");
+  if(!container) return;
+  container.innerHTML = "";
+  var h = loadHistory();
+  if(!h.length){ container.innerHTML = '<div style="text-align:center;color:#8e8e93;padding:40px;">Nessuno storico.</div>'; return; }
+
+  // Raccoglie tutti gli esercizi con le loro sessioni
+  var exMap = {}; // exName -> [{date, maxWeight, sets}]
+  h.forEach(function(s){
+    if(!s.exercises) return;
+    s.exercises.forEach(function(ex){
+      if(CARDIO_NAMES.indexOf(ex.name)>=0) return; // skip cardio
+      if(!exMap[ex.name]) exMap[ex.name] = [];
+      var weights = ex.sets.filter(function(st){ return st.done && st.weight && parseFloat(st.weight)>0; })
+                            .map(function(st){ return parseFloat(st.weight); });
+      var maxW = weights.length ? Math.max.apply(null,weights) : null;
+      exMap[ex.name].push({ date: s.date, maxWeight: maxW, sets: ex.sets });
+    });
+  });
+
+  // Filtra per query
+  var q = query ? query.toLowerCase().trim() : "";
+  var names = Object.keys(exMap).filter(function(n){ return !q || n.toLowerCase().indexOf(q)>=0; });
+
+  // Ordina: più recente prima
+  names.sort(function(a,b){
+    var la = exMap[a][exMap[a].length-1].date;
+    var lb = exMap[b][exMap[b].length-1].date;
+    return new Date(lb) - new Date(la);
+  });
+
+  if(!names.length){
+    container.innerHTML = '<div style="text-align:center;color:#8e8e93;padding:40px;">Nessun esercizio trovato.</div>';
+    return;
+  }
+
+  names.forEach(function(name){
+    var sessions = exMap[name];
+    var last = sessions[sessions.length-1];
+    var lastW = last.maxWeight;
+
+    // Trend
+    var trend = "";
+    if(sessions.length >= 2){
+      var prev = sessions[sessions.length-2].maxWeight;
+      if(lastW !== null && prev !== null){
+        var diff = lastW - prev;
+        if(diff > 2.5) trend = "↑";
+        else if(diff > 0) trend = "↗";
+        else if(diff === 0) trend = "→";
+        else if(diff > -2.5) trend = "↘";
+        else trend = "↓";
+      }
+    }
+    var trendColor = trend==="↑"||trend==="↗" ? "#34C759" : trend==="↓"||trend==="↘" ? "#ff3b30" : "#8e8e93";
+
+    var card = document.createElement("div");
+    card.style.cssText = "background:#fff;border-radius:16px;padding:16px 18px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.07);display:flex;align-items:center;gap:14px;cursor:pointer;";
+    card.onclick = function(){ openProg(name); };
+
+    var info = document.createElement("div");
+    info.style.flex = "1";
+
+    var nameEl = document.createElement("div");
+    nameEl.style.cssText = "font-size:17px;font-weight:700;color:#1c1c1e;margin-bottom:4px;";
+    nameEl.textContent = name;
+
+    var meta = document.createElement("div");
+    meta.style.cssText = "font-size:14px;color:#8e8e93;";
+    meta.textContent = sessions.length + (sessions.length===1?" sessione":" sessioni");
+    if(lastW) meta.textContent += " · Max: " + lastW + " kg";
+
+    info.appendChild(nameEl); info.appendChild(meta);
+
+    var right = document.createElement("div");
+    right.style.cssText = "display:flex;flex-direction:column;align-items:flex-end;gap:4px;";
+
+    if(trend){
+      var trendEl = document.createElement("div");
+      trendEl.style.cssText = "font-size:26px;font-weight:700;color:"+trendColor+";line-height:1;";
+      trendEl.textContent = trend;
+      right.appendChild(trendEl);
+    }
+
+    var chevron = document.createElement("div");
+    chevron.style.cssText = "font-size:18px;color:#c7c7cc;";
+    chevron.textContent = "›";
+    right.appendChild(chevron);
+
+    card.appendChild(info); card.appendChild(right);
+    container.appendChild(card);
+  });
+}
 
 function renderHistory(){
   var history=loadHistory();
