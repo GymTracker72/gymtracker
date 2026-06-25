@@ -1264,8 +1264,10 @@ function saveHistory(h){
 function saveActive(){
   if(!currentWorkout) return;
   try{ localStorage.setItem(SK_SESSION,JSON.stringify({
-    workout:currentWorkout, startTime:sessionStart ? sessionStart.getTime() : null,
-    setsState:setsState, exercises:sessionExercises,
+    workout:currentWorkout,
+    startTime: sessionStart ? sessionStart.getTime() : null,
+    setsState:setsState,
+    exercises:sessionExercises,
     sessionStarted:sessionStarted
   }))}catch{}
 }
@@ -1444,7 +1446,6 @@ function renderDashboard(){
 // ── SESSION ────────────────────────────────────────────────────────────────
 function startSession(name,savedStart,savedSets,savedExercises){
   currentWorkout=name;
-  sessionStart=savedStart?new Date(savedStart):new Date();
   var data=loadWorkouts()[name]||BASE_WORKOUTS[name];
   if(!data){
     alert("Errore: scheda \""+name+"\" non trovata. Ricarica l'app.");
@@ -1464,16 +1465,24 @@ function startSession(name,savedStart,savedSets,savedExercises){
     sessionExercises.forEach(function(ex,ei){setsState[ei]=initSets(ex);});
   }
   document.getElementById("btn-back").style.color=data.color;
-  // btn-end background set in updateStartStopUI
   document.getElementById("session-title").textContent=name;
   document.getElementById("cd-startstop").style.background=data.color;
+
   // Ripristina sessionStarted dallo stato salvato
-  var active = loadActive();
-  sessionStarted = active && active.sessionStarted === true ? true : false;
+  var active=loadActive();
+  sessionStarted = active && active.sessionStarted===true ? true : false;
+
+  // Imposta sessionStart solo se il timer era già avviato
+  if(sessionStarted && savedStart){
+    sessionStart = new Date(savedStart);
+  } else if(!sessionStarted){
+    sessionStart = null; // non ancora avviato
+  }
+
   renderExercises();
   showScreen("session");
   updateStartStopUI();
-  if(sessionStarted){
+  if(sessionStarted && sessionStart){
     startSessionTimer();
   }
   saveActive();
@@ -1515,7 +1524,7 @@ function updateStartStopUI(){
 function startWorkoutTimer(){
   unlockAudio();
   sessionStarted = true;
-  sessionStart = new Date();
+  sessionStart = new Date(); // imposta ora di inizio al momento del tap
   updateStartStopUI();
   startSessionTimer();
   saveActive();
@@ -1527,6 +1536,7 @@ function startSessionTimer(){
   timerInterval=setInterval(function(){updateSessionTimer();saveActive();},1000);
 }
 function updateSessionTimer(){
+  if(!sessionStart) return;
   var elapsed=Date.now()-sessionStart.getTime();
   document.getElementById("session-timer-display").textContent=
     "Inizio "+fmtTime(sessionStart)+" · "+fmtDur(elapsed);
@@ -2069,7 +2079,7 @@ function toggleCD(){
 }
 
 function askEnd(){
-  var elapsed = Date.now() - (sessionStart ? sessionStart.getTime() : Date.now());
+  var elapsed = sessionStart ? Date.now() - sessionStart.getTime() : 0;
   var color = (loadWorkouts()[currentWorkout]||BASE_WORKOUTS[currentWorkout]||{color:'#007AFF'}).color;
   showModal("Termina allenamento?","Durata: "+fmtDur(elapsed)+". I dati verranno salvati.",
     color,"Si\u0300, termina",endSession);
