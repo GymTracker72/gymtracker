@@ -1262,10 +1262,11 @@ function saveHistory(h){
   }catch{}
 }
 function saveActive(){
-  if(!currentWorkout||!sessionStart) return;
+  if(!currentWorkout) return;
   try{ localStorage.setItem(SK_SESSION,JSON.stringify({
-    workout:currentWorkout, startTime:sessionStart.getTime(),
-    setsState:setsState, exercises:sessionExercises
+    workout:currentWorkout, startTime:sessionStart ? sessionStart.getTime() : null,
+    setsState:setsState, exercises:sessionExercises,
+    sessionStarted:sessionStarted
   }))}catch{}
 }
 function loadActive(){ try{return JSON.parse(localStorage.getItem(SK_SESSION)||"null")}catch{return null} }
@@ -1466,7 +1467,9 @@ function startSession(name,savedStart,savedSets,savedExercises){
   // btn-end background set in updateStartStopUI
   document.getElementById("session-title").textContent=name;
   document.getElementById("cd-startstop").style.background=data.color;
-  sessionStarted = !!savedStart; // se è una ripresa, il timer era già avviato
+  // Ripristina sessionStarted dallo stato salvato
+  var active = loadActive();
+  sessionStarted = active && active.sessionStarted === true ? true : false;
   renderExercises();
   showScreen("session");
   updateStartStopUI();
