@@ -1421,9 +1421,10 @@ function renderDashboard(){
   var active=loadActive();
   var banner=document.getElementById("active-banner");
   if(active&&(loadWorkouts()[active.workout]||BASE_WORKOUTS[active.workout])){
-    var elapsed=Date.now()-active.startTime;
+    var elapsed = active.startTime ? Date.now()-active.startTime : 0;
+    var inCorso = active.sessionStarted ? fmtDur(elapsed)+" · Tocca per riprendere" : "Non avviata · Tocca per riprendere";
     document.getElementById("ab-title").textContent=active.workout+" in corso";
-    document.getElementById("ab-sub").textContent=fmtDur(elapsed)+" · Tocca per riprendere";
+    document.getElementById("ab-sub").textContent=inCorso;
     banner.classList.add("show");
   } else { banner.classList.remove("show"); }
   var histSection=document.getElementById("history-section");
