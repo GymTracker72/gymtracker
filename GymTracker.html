@@ -714,11 +714,19 @@ function loadWorkouts(){
   try{
     var saved = JSON.parse(localStorage.getItem(SK_WORKOUTS)||"null");
     if(saved && typeof saved==="object" && Object.keys(saved).length>0){
-      // Assicura che le schede default esistano sempre se non sono state eliminate intenzionalmente
-      return saved;
+      // Verifica che ogni scheda abbia i campi minimi
+      var valid = true;
+      Object.keys(saved).forEach(function(k){
+        var w = saved[k];
+        if(!w || typeof w!=="object"){ valid=false; return; }
+        if(!w.color) w.color="#8e8e93";
+        if(!w.icon) w.icon="●";
+        if(!Array.isArray(w.exercises)) w.exercises=[];
+      });
+      if(valid) return saved;
     }
   }catch(e){}
-  // Prima volta: inizializza localStorage con le schede di default e salvale subito
+  // Prima volta o dati corrotti: usa le default e salvale subito
   var defaults = JSON.parse(JSON.stringify(BASE_WORKOUTS));
   try{ localStorage.setItem(SK_WORKOUTS, JSON.stringify(defaults)); }catch(e){}
   return defaults;
@@ -1103,6 +1111,18 @@ async function getOrCreateDriveFolder(token){
   return folder.id;
 }
 
+function handleDriveTokenExpired(){
+  // Token scaduto: disconnetti silenziosamente e mostra pulsante riconnetti
+  localStorage.removeItem(SK_DRIVE_TOKEN);
+  localStorage.removeItem(SK_DRIVE_FILE_ID);
+  localStorage.removeItem(SK_DRIVE_WORKOUTS_FILE_ID);
+  driveToken = null; driveFileId = null;
+  updateDriveUI(false);
+  var status = document.getElementById("drive-status");
+  if(status) status.textContent = "Sessione scaduta — riconnetti Drive";
+  setSyncIndicator("error");
+}
+
 async function driveLoadHistory(){
   var token = getDriveToken();
   if(!token) return;
@@ -1114,6 +1134,7 @@ async function driveLoadHistory(){
       var q = encodeURIComponent("name='"+DRIVE_FILE_NAME+"' and '"+folderId+"' in parents and trashed=false");
       var search = await fetch("https://www.googleapis.com/drive/v3/files?q="+q+"&fields=files(id)",
         {headers:{"Authorization":"Bearer "+token}});
+      if(search.status===401){ handleDriveTokenExpired(); return; }
       var sdata = await search.json();
       if(sdata.files && sdata.files.length > 0){
         fileId = sdata.files[0].id;
@@ -1125,6 +1146,8 @@ async function driveLoadHistory(){
         "https://www.googleapis.com/drive/v3/files/"+fileId+"?alt=media",
         {headers:{"Authorization":"Bearer "+token}}
       );
+      if(res.status===401){ handleDriveTokenExpired(); return; }
+      if(!res.ok){ setSyncIndicator("error"); return; }
       var driveData = await res.json();
       if(Array.isArray(driveData) && driveData.length > 0){
         var local = JSON.parse(localStorage.getItem(SK_HISTORY)||"[]");
@@ -1150,6 +1173,7 @@ async function driveLoadWorkouts(){
       var q = encodeURIComponent("name='"+DRIVE_WORKOUTS_FILE_NAME+"' and '"+folderId+"' in parents and trashed=false");
       var search = await fetch("https://www.googleapis.com/drive/v3/files?q="+q+"&fields=files(id)",
         {headers:{"Authorization":"Bearer "+token}});
+      if(search.status===401){ handleDriveTokenExpired(); return; }
       var sdata = await search.json();
       if(sdata.files && sdata.files.length > 0){
         fileId = sdata.files[0].id;
@@ -1161,13 +1185,18 @@ async function driveLoadWorkouts(){
         "https://www.googleapis.com/drive/v3/files/"+fileId+"?alt=media",
         {headers:{"Authorization":"Bearer "+token}}
       );
+      if(res.status===401){ handleDriveTokenExpired(); return; }
+      if(!res.ok){ console.log("Drive workouts error:", res.status); return; }
       var driveWorkouts = await res.json();
       if(driveWorkouts && typeof driveWorkouts==="object" && Object.keys(driveWorkouts).length>0){
         localStorage.setItem(SK_WORKOUTS, JSON.stringify(driveWorkouts));
         renderDashboard();
       }
     }
-  }catch(e){ console.log("Drive load workouts error",e); }
+  }catch(e){
+    console.log("Drive load workouts error",e);
+    // Non crashare — la dashboard usa già i dati in localStorage
+  }
 }
 
 async function driveSaveWorkouts(w){
@@ -1485,8 +1514,9 @@ function startSession(name,savedStart,savedSets,savedExercises){
   updateStartStopUI();
   if(sessionStarted && sessionStart){
     startSessionTimer();
+    saveActive(); // salva solo se già avviata (ripresa)
   }
-  saveActive();
+  // NON salvare se non ancora avviata — non lascia traccia nella dashboard
 }
 
 function initSets(exName){
